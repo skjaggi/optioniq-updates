@@ -1,13 +1,13 @@
 {
-  "version": "1.1",
+  "version": "1.2",
   "date": "2026-10-16",
-  "notes": "OptionIQ and Quantum Nexus logos, and automatic updates.",
+  "notes": "An OptionIQ icon on your desktop for starting the app, and Import now reads Excel files too.",
   "windows": {
     "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ.zip",
-    "sha256": "bde63f608a0bc5c1895f20c1945ec3810ac5443a56141ea0aaab903233e4c330"
+    "sha256": "fb7e77227fa1ba88313641ffa73e82125a0e7b93d9461cc5fe029b2bedeb3eda"
   },
   "mac": {
     "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ-for-Mac.zip",
-    "sha256": "938e562acf39692121d3672789005afc59ec68d878ea41960efe7c3c24d6bb54"
+    "sha256": "bac1604f453b87ffb36ca4039a850d152babf64e46ec63cf04ed5d00a9a15739"
   }
 }
