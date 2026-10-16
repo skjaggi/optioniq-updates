@@ -1,0 +1,13 @@
+{
+  "version": "1.1.1",
+  "date": "2026-10-16",
+  "notes": "A small test update, to check that automatic updates work. Nothing else changes.",
+  "windows": {
+    "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ.zip",
+    "sha256": "f885abf91f5c9b051c61b5dfa07e6607f3aaae63a1409d87792c7c5e3452452e"
+  },
+  "mac": {
+    "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ-for-Mac.zip",
+    "sha256": "d568e9abbf90a98164ca2486cb4bbfd2dc7b470825ec616a9955a147f7ecb138"
+  }
+}
