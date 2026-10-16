@@ -1,0 +1,9 @@
+Account,Date,Company,Ticker,Strike,Current Stock,Exp Date,Prem,Qty,C/P,S/B,Sells,Total,Action,Close Date,Close Prem,Net P&L
+Roth IRA,2026-08-03,Apple,AAPL,210,218.50,2026-08-15,1.25,1,P,S,,,Expired,2026-08-15,0,
+Brokerage,2026-08-05,Microsoft,MSFT,420,410.00,2026-08-29,3.10,2,C,S,,,Bought to Close,2026-08-20,-150,
+Roth IRA,2026-08-10,Nvidia,NVDA,120,125.00,2026-08-22,1.80,1,P,S,,,Assigned,2026-08-22,,
+Brokerage,2026-08-25,Nvidia,NVDA,125,121.00,2026-09-05,1.40,1,C,S,,,Called Away,2026-09-05,,
+Brokerage,2026-09-02,AMD,AMD,160,155.00,2026-10-17,2.50,1,C,B,,,Sold to Close,2026-09-24,380,
+Roth IRA,2026-09-08,Walmart,WMT,95,97.00,2026-09-19,0.80,3,P,S,,,Rolled,2026-09-18,-120,
+Roth IRA,2026-10-06,Coca-Cola,KO,68,70.20,2026-11-20,0.95,2,P,S,,,Open,,,
+Brokerage,2026-10-08,Costco,COST,980,955.00,2026-12-18,12.40,1,C,S,,,Open,,,
