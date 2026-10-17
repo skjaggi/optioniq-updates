@@ -12,6 +12,7 @@ Downloads for **OptionIQ** by Quantum Nexus LLC. These are always the latest ver
 
 Once installed, the app checks `latest.json` here and offers new versions by itself
 (Settings → About → Check for updates).
+`OptionIQ-update.zip` is what the Windows app downloads to update itself; new users need `OptionIQ.zip`.
 
 © 2026 Quantum Nexus LLC. All rights reserved. Free for personal use; please
 don't sell, change or pass it on without permission.
