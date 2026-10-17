@@ -1,13 +1,13 @@
 {
-  "version": "1.2",
-  "date": "2026-10-16",
-  "notes": "An OptionIQ icon on your desktop for starting the app, and Import now reads Excel files too.",
+  "version": "1.3",
+  "date": "2026-10-17",
+  "notes": "What's new in 1.3:\n• Screener gives each trade a 0–100 Score and lists the best first (hover over the Score to see why)\n• Weekly and Monthly quick settings in the Screener\n• New 🔁 Roll candidates: shows roll choices for your open puts and calls, with your own settings for days, delta, in the money, and puts or calls\n• Premiums shown after the $0.67 fee\n• Warnings for upcoming dividends, too much in one sector, and price support levels\n• The price message at the top can now be closed with ✕",
   "windows": {
     "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ.zip",
-    "sha256": "fb7e77227fa1ba88313641ffa73e82125a0e7b93d9461cc5fe029b2bedeb3eda"
+    "sha256": "cbdc24742d66b1c496fec4253dbb1f2465e83e41398b83e449b53be37e41ad26"
   },
   "mac": {
     "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ-for-Mac.zip",
-    "sha256": "bac1604f453b87ffb36ca4039a850d152babf64e46ec63cf04ed5d00a9a15739"
+    "sha256": "6d76fef857a84dfde3b3a65aa0714311bd5de6ccea417b659fe5be86fe677434"
   }
 }
