@@ -1,13 +1,13 @@
 {
-  "version": "1.4",
+  "version": "1.5",
   "date": "2026-10-19",
-  "notes": "What's new in 1.4:\n• ⬆ Import now works with your own spreadsheet layout. OptionIQ guesses which column is which, you fix any wrong guess from drop-down lists, and you see a preview before anything is saved\n• Understands words like Put/Call, Sell/Buy, Sell to Open, Closed and Expired, picks the right sheet in an Excel file, and skips totals rows\n• Clear Add and Replace buttons, and your column choices are remembered for next time\n\nNew in 1.3.2:\n• New versions are offered as soon as you start the app\n• Updates are much faster, show an \"Updating OptionIQ\" window and reopen the app by themselves\n\nNew in 1.3:\n• Screener gives each trade a 0–100 Score and lists the best first (hover over the Score to see why)\n• Weekly and Monthly quick settings in the Screener\n• New 🔁 Roll candidates: shows roll choices for your open puts and calls, with your own settings for days, delta, in the money, and puts or calls\n• Premiums shown after the $0.67 fee\n• Warnings for upcoming dividends, too much in one sector, and price support levels\n• The price message at the top can now be closed with ✕",
+  "notes": "What's new in 1.5:\n• ＋ New Trade and ＋ New Holding now open in a pop-up window, so you can always see them, even when the page is scrolled down\n• ✏️ Edit on a trade or holding also opens a pop-up with large boxes that show the current values\n\nNew in 1.4:\n• ⬆ Import now works with your own spreadsheet layout. OptionIQ guesses which column is which, you fix any wrong guess from drop-down lists, and you see a preview before anything is saved\n• Understands words like Put/Call, Sell/Buy, Sell to Open, Closed and Expired, picks the right sheet in an Excel file, and skips totals rows\n• Clear Add and Replace buttons, and your column choices are remembered for next time\n\nNew in 1.3.2:\n• New versions are offered as soon as you start the app\n• Updates are much faster, show an \"Updating OptionIQ\" window and reopen the app by themselves\n\nNew in 1.3:\n• Screener gives each trade a 0–100 Score and lists the best first (hover over the Score to see why)\n• Weekly and Monthly quick settings in the Screener\n• New 🔁 Roll candidates: shows roll choices for your open puts and calls, with your own settings for days, delta, in the money, and puts or calls\n• Premiums shown after the $0.67 fee\n• Warnings for upcoming dividends, too much in one sector, and price support levels\n• The price message at the top can now be closed with ✕",
   "windows": {
     "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ-update.zip",
-    "sha256": "a9e6da8e23029ecfe905d93e9b870b94694b8188d3ad32caabc1f295819326e5"
+    "sha256": "80b7a667707acbc8b806c641f79c18b78643fc57e9c36f59a2bf24d10f9466b6"
   },
   "mac": {
     "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ-for-Mac.zip",
-    "sha256": "453d579ae8b5b6311ff0c4fdf6c6af22f6c0b0af7342da9c564d9a5939291c91"
+    "sha256": "2dd58d303f04dc1d7039a0076ac0608961332323750b84d1cf0b6ee276a1cc92"
   }
 }
