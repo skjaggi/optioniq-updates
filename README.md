@@ -6,7 +6,7 @@ Downloads for **OptionIQ** by Quantum Nexus LLC. These are always the latest ver
 | --- | --- |
 | [OptionIQ.zip](https://github.com/skjaggi/optioniq-updates/raw/main/OptionIQ.zip) | Windows 10 or 11 |
 | [OptionIQ-for-Mac.zip](https://github.com/skjaggi/optioniq-updates/raw/main/OptionIQ-for-Mac.zip) | Mac (macOS 11 or newer) |
-| [OptionIQ User Manual (PDF)](https://github.com/skjaggi/optioniq-updates/raw/main/OptionIQ-User-Manual.pdf) | How to install and use it |
+| [OptionIQ User Manual (PDF)](https://github.com/skjaggi/optioniq-updates/raw/main/OptionIQ-User-Manual.pdf) | How to install and use it: every tab and button, with pictures, practice exercises and an index |
 | [OptionIQ Sample Import (Excel)](https://github.com/skjaggi/optioniq-updates/raw/main/OptionIQ-Sample-Import.xlsx) | Made-up practice trades for the Import button (opens in Excel) |
 | [OptionIQ Sample Import (CSV)](https://github.com/skjaggi/optioniq-updates/raw/main/OptionIQ-Sample-Import.csv) | The same trades as a CSV file |
 
