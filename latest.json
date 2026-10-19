@@ -1,13 +1,13 @@
 {
-  "version": "1.3.2",
-  "date": "2026-10-17",
-  "notes": "What's new in 1.3.2:\n• New versions are offered as soon as you start the app\n• Updates are much faster, show an \"Updating OptionIQ\" window and reopen the app by themselves\n\nNew in 1.3:\n• Screener gives each trade a 0–100 Score and lists the best first (hover over the Score to see why)\n• Weekly and Monthly quick settings in the Screener\n• New 🔁 Roll candidates: shows roll choices for your open puts and calls, with your own settings for days, delta, in the money, and puts or calls\n• Premiums shown after the $0.67 fee\n• Warnings for upcoming dividends, too much in one sector, and price support levels\n• The price message at the top can now be closed with ✕",
+  "version": "1.4",
+  "date": "2026-10-19",
+  "notes": "What's new in 1.4:\n• ⬆ Import now works with your own spreadsheet layout. OptionIQ guesses which column is which, you fix any wrong guess from drop-down lists, and you see a preview before anything is saved\n• Understands words like Put/Call, Sell/Buy, Sell to Open, Closed and Expired, picks the right sheet in an Excel file, and skips totals rows\n• Clear Add and Replace buttons, and your column choices are remembered for next time\n\nNew in 1.3.2:\n• New versions are offered as soon as you start the app\n• Updates are much faster, show an \"Updating OptionIQ\" window and reopen the app by themselves\n\nNew in 1.3:\n• Screener gives each trade a 0–100 Score and lists the best first (hover over the Score to see why)\n• Weekly and Monthly quick settings in the Screener\n• New 🔁 Roll candidates: shows roll choices for your open puts and calls, with your own settings for days, delta, in the money, and puts or calls\n• Premiums shown after the $0.67 fee\n• Warnings for upcoming dividends, too much in one sector, and price support levels\n• The price message at the top can now be closed with ✕",
   "windows": {
     "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ-update.zip",
-    "sha256": "73164f972c0b75a2ea81448b4a58ac60fc5e7fb9d24903f53c2df2fc54766673"
+    "sha256": "a9e6da8e23029ecfe905d93e9b870b94694b8188d3ad32caabc1f295819326e5"
   },
   "mac": {
     "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ-for-Mac.zip",
-    "sha256": "0443e25eb960b0c9517be361ba5089709b35bde62b1be875a9a5a29cc3982eee"
+    "sha256": "453d579ae8b5b6311ff0c4fdf6c6af22f6c0b0af7342da9c564d9a5939291c91"
   }
 }
