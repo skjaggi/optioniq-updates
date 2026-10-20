@@ -46,10 +46,11 @@
 
   // ---- state ----------------------------------------------------------------
   var settings = load("oiq_settings", { store: "sample", nearPct: 3, lock: false, terms: "" });
+  if (!(settings.days >= 0)) settings.days = 0;   // Trades tab: open trades expiring within this many days (0 = all)
   var copy = load("oiq_copy_" + settings.store, null);
   var pending = load("oiq_pending_" + settings.store, []);
   var prices = load("oiq_prices", { at: "", q: {} });
-  var ui = { tab: "home", account: "All", search: "", closed: false, sheet: null, busy: "", problem: "", locked: !!settings.lock };
+  var ui = { tab: "home", account: "All", search: "", daysTyped: "", closed: false, sheet: null, busy: "", problem: "", locked: !!settings.lock };
 
   function store() { return Stores[settings.store] || Stores.sample; }
   function saveState() {
@@ -290,15 +291,22 @@
   function tradesScreen(v) {
     var q = ui.search.trim().toUpperCase();
     var list = v.trades.filter(inAccount).filter(function (t) {
-      return (ui.closed || Sums.isOpen(t)) && (!q || String(t.ticker).toUpperCase().indexOf(q) === 0);
+      if (!(ui.closed || Sums.isOpen(t)) || (q && String(t.ticker).toUpperCase().indexOf(q) !== 0)) return false;
+      return !settings.days || !Sums.isOpen(t) || daysUntil(t.expDate) <= settings.days;
     }).sort(function (a, b) {
       var ao = Sums.isOpen(a), bo = Sums.isOpen(b);
       if (ao !== bo) return ao ? -1 : 1;
       return ao ? String(a.expDate).localeCompare(String(b.expDate)) : String(b.closeDate).localeCompare(String(a.closeDate));
     });
-    var h = header("Trades", "All open, soonest first");
+    var d = settings.days, custom = d && [7, 14, 30].indexOf(d) < 0;
+    var h = header("Trades", d ? "Open trades expiring within " + d + " day" + (d > 1 ? "s" : "") : "All open, soonest first");
     h += '<div class="tools"><input id="search" type="search" placeholder="Find a ticker" value="' + esc(ui.search) + '" autocapitalize="characters">' +
          '<label class="switch"><input type="checkbox" data-act="closed"' + (ui.closed ? " checked" : "") + "> Closed (90 days)</label></div>";
+    h += '<div class="chips days"><span class="muted small">Expiring in</span>' +
+         [[0, "All"], [7, "7"], [14, "14"], [30, "30"]].map(function (o) {
+           return '<button class="chip' + (d === o[0] ? " on" : "") + '" data-act="days" data-v="' + o[0] + '">' + o[1] + "</button>";
+         }).join("") +
+         '<input id="days" class="chip' + (custom || ui.daysTyped ? " on" : "") + '" inputmode="numeric" placeholder="other" value="' + esc(ui.daysTyped || (custom ? d : "")) + '"><span class="muted small">days</span></div>';
     h += accountChips(v);
     h += list.length ? list.map(function (t) { return tradeCard(t, v); }).join("") : '<p class="muted center">No trades to show.</p>';
     var openOnes = list.filter(Sums.isOpen);
@@ -552,6 +560,7 @@
     switch (act) {
       case "tab": ui.tab = val; ui.sheet = null; render(); app.querySelector("main").scrollTop = 0; break;
       case "acct": ui.account = val; render(); break;
+      case "days": settings.days = parseInt(val, 10) || 0; ui.daysTyped = ""; saveState(); render(); break;
       case "prices": refreshPrices(); break;
       case "new": ui.sheet = tradeForm({ account: ui.account !== "All" ? ui.account : (copy.accounts || [])[0] }, false); render(); break;
       case "watch-add": ui.sheet = watchForm(); render(); break;
@@ -611,6 +620,12 @@
   });
 
   app.addEventListener("input", function (e) {
+    if (e.target.id === "days") {
+      ui.daysTyped = e.target.value.replace(/\D/g, "").slice(0, 4);
+      var nd = parseInt(ui.daysTyped, 10);
+      settings.days = nd > 0 ? Math.min(nd, 3650) : 0; saveState(); render();
+      var di = document.getElementById("days"); di.focus(); di.setSelectionRange(di.value.length, di.value.length);
+    }
     if (e.target.id === "search") {
       ui.search = e.target.value; render();
       var s = document.getElementById("search"); s.focus(); s.setSelectionRange(s.value.length, s.value.length);

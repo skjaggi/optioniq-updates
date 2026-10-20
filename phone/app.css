@@ -34,6 +34,10 @@ h3{font-size:16px;margin:12px 0 6px;color:var(--purple)}
 .chips{display:flex;gap:8px;overflow-x:auto;margin:0 -16px 12px;padding:0 16px}
 .chip{flex:none;background:var(--panel);color:var(--muted);border:1px solid var(--line);border-radius:16px;padding:6px 14px;font:inherit;font-size:14px}
 .chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.chips.days{align-items:center;gap:6px}
+.chips.days .muted{flex:none}
+.chips.days .chip{padding:6px 12px}
+.chips.days input.chip{width:62px;margin:0;padding:6px 10px;text-align:center}
 .tools{display:flex;gap:10px;align-items:center;margin-bottom:10px}
 .tools input[type=search]{flex:1}
 input,select{width:100%;background:var(--panel);color:var(--text);border:1px solid #4b5563;border-radius:8px;padding:10px;font:inherit;font-size:16px;margin-top:4px;color-scheme:dark}
