@@ -47,6 +47,7 @@
   // ---- state ----------------------------------------------------------------
   var settings = load("oiq_settings", { store: "sample", nearPct: 3, lock: false, terms: "" });
   if (!(settings.days >= 0)) settings.days = 0;   // Trades tab: open trades expiring within this many days (0 = all)
+  if (settings.cp !== "C" && settings.cp !== "P") settings.cp = "";   // Trades tab: calls, puts or both
   var copy = load("oiq_copy_" + settings.store, null);
   var pending = load("oiq_pending_" + settings.store, []);
   var prices = load("oiq_prices", { at: "", q: {} });
@@ -236,9 +237,9 @@
            (sub ? '<p class="sub">' + sub + "</p>" : "") + "</div></div></header>";
   }
 
-  function accountChips(v) {
+  function accountChips(v, size) {
     var accts = ["All"].concat(copy.accounts || []);
-    return '<div class="chips">' + accts.map(function (a) {
+    return '<div class="chips' + (size ? " " + size : "") + '">' + accts.map(function (a) {
       return '<button class="chip' + (ui.account === a ? " on" : "") + '" data-act="acct" data-v="' + esc(a) + '">' + esc(a) + "</button>";
     }).join("") + "</div>";
   }
@@ -293,6 +294,7 @@
     var list = v.trades.filter(inAccount).filter(function (t) {
       // Open or Closed (90 days): one list at a time.
       if (Sums.isOpen(t) === ui.closed || (q && String(t.ticker).toUpperCase().indexOf(q) !== 0)) return false;
+      if (settings.cp && t.cp !== settings.cp) return false;
       return ui.closed || !settings.days || daysUntil(t.expDate) <= settings.days;
     }).sort(function (a, b) {
       var ao = Sums.isOpen(a), bo = Sums.isOpen(b);
@@ -300,17 +302,24 @@
       return ao ? String(a.expDate).localeCompare(String(b.expDate)) : String(b.closeDate).localeCompare(String(a.closeDate));
     });
     var d = settings.days, custom = d && [7, 14, 30].indexOf(d) < 0;
-    var h = header("Trades", ui.closed ? "Closed in the last 90 days, newest first"
-      : d ? "Open trades expiring within " + d + " day" + (d > 1 ? "s" : "") : "All open, soonest first");
+    // The subtitle counts what the filters leave, e.g. "6 open puts expiring within 7 days".
+    var n = list.length, kind = settings.cp === "C" ? "call" : settings.cp === "P" ? "put" : "trade";
+    var what = "<b>" + n + "</b> " + (ui.closed ? "closed " : "open ") + kind + (n === 1 ? "" : "s");
+    var h = header("Trades", ui.closed ? what + " in the last 90 days, newest first"
+      : what + (d ? " expiring within " + d + " day" + (d > 1 ? "s" : "") : "") + ", soonest first");
     h += '<div class="tools"><input id="search" type="search" placeholder="Find a ticker" value="' + esc(ui.search) + '" autocapitalize="characters"></div>';
-    h += '<div class="chips"><button class="chip' + (ui.closed ? "" : " on") + '" data-act="closed" data-v="">Open</button>' +
-         '<button class="chip' + (ui.closed ? " on" : "") + '" data-act="closed" data-v="1">Closed (90 days)</button></div>';
-    if (!ui.closed) h += '<div class="chips days"><span class="muted small">Expiring in</span>' +
+    // Compact filter rows: Open / Closed next to Both / Calls / Puts, then the days.
+    h += '<div class="chips sm"><span class="seg"><button class="chip' + (ui.closed ? "" : " on") + '" data-act="closed" data-v="">Open</button>' +
+         '<button class="chip' + (ui.closed ? " on" : "") + '" data-act="closed" data-v="1">Closed 90 days</button></span>' +
+         '<span class="seg">' + [["", "Both"], ["C", "Calls"], ["P", "Puts"]].map(function (o) {
+           return '<button class="chip' + (settings.cp === o[0] ? " on" : "") + '" data-act="cp" data-v="' + o[0] + '">' + o[1] + "</button>";
+         }).join("") + "</span></div>";
+    if (!ui.closed) h += '<div class="chips sm days"><span class="muted small">Expiring in</span>' +
          [[0, "All"], [7, "7"], [14, "14"], [30, "30"]].map(function (o) {
            return '<button class="chip' + (d === o[0] ? " on" : "") + '" data-act="days" data-v="' + o[0] + '">' + o[1] + "</button>";
          }).join("") +
          '<input id="days" class="chip' + (custom || ui.daysTyped ? " on" : "") + '" inputmode="numeric" placeholder="other" value="' + esc(ui.daysTyped || (custom ? d : "")) + '"><span class="muted small">days</span></div>';
-    h += accountChips(v);
+    h += accountChips(v, "sm");
     h += list.length ? list.map(function (t) { return tradeCard(t, v); }).join("") : '<p class="muted center">' + (ui.closed ? "No trades closed in the last 90 days." : "No trades to show.") + "</p>";
     var openOnes = list.filter(Sums.isOpen);
     if (openOnes.length) h += '<div class="actions"><button class="btn" data-act="cal-all">Add expiries to calendar</button></div>';
@@ -564,6 +573,7 @@
       case "tab": ui.tab = val; ui.sheet = null; render(); app.querySelector("main").scrollTop = 0; break;
       case "acct": ui.account = val; render(); break;
       case "closed": ui.closed = !!val; render(); app.querySelector("main").scrollTop = 0; break;
+      case "cp": settings.cp = val === "C" || val === "P" ? val : ""; saveState(); render(); break;
       case "days": settings.days = parseInt(val, 10) || 0; ui.daysTyped = ""; saveState(); render(); break;
       case "prices": refreshPrices(); break;
       case "new": ui.sheet = tradeForm({ account: ui.account !== "All" ? ui.account : (copy.accounts || [])[0] }, false); render(); break;

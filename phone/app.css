@@ -38,6 +38,14 @@ h3{font-size:16px;margin:12px 0 6px;color:var(--purple)}
 .chips.days .muted{flex:none}
 .chips.days .chip{padding:6px 12px}
 .chips.days input.chip{width:62px;margin:0;padding:6px 10px;text-align:center}
+/* Trades tab: smaller chips so the filters fit in three short rows */
+.chips.sm{gap:6px;margin-bottom:8px;align-items:center}
+.chips.sm .chip{padding:4px 10px;font-size:13px}
+.chips.sm.days input.chip{width:54px;padding:4px 8px}
+.chips .seg{display:flex;flex:none;border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.chips .seg .chip{border:0;border-radius:0;background:transparent}
+.chips .seg .chip.on{background:var(--blue);color:#fff}
+.chips .seg .chip+.chip{border-left:1px solid var(--line)}
 .tools{display:flex;gap:10px;align-items:center;margin-bottom:10px}
 .tools input[type=search]{flex:1}
 input,select{width:100%;background:var(--panel);color:var(--text);border:1px solid #4b5563;border-radius:8px;padding:10px;font:inherit;font-size:16px;margin-top:4px;color-scheme:dark}
