@@ -71,3 +71,10 @@ footer{color:#64748b;font-size:12px;text-align:center;margin-top:24px}
 .agree{display:flex;gap:10px;align-items:center;font-size:16px}
 .agree input{width:auto;transform:scale(1.4);margin:0}
 a{color:#60a5fa}
+/* On a computer or tablet, keep the phone layout instead of stretching it. */
+@media (min-width:600px){
+  main{left:50%;right:auto;width:560px;transform:translateX(-50%)}
+  nav{left:50%;right:auto;width:560px;transform:translateX(-50%)}
+  .fab{right:calc(50% - 262px)}
+  .sheet{left:50%;right:auto;width:560px;transform:translateX(-50%)}
+}
