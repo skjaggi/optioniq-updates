@@ -67,17 +67,21 @@
     var names = {};
     (copy.watchlist || []).forEach(function (w) { if (w.name) names[w.ticker] = w.name; });
     (copy.trades || []).forEach(function (t) { if (t.company) names[t.ticker] = t.company; });
+    var watch = {};
+    (copy.watchlist || []).forEach(function (w) { watch[w.ticker] = w.name || ""; });
     var r = Phone.applyPhoneOps(copy.trades || [], copy.stocks || [], waiting, {
       calcSells: Sums.calcSells, calcBuys: Sums.calcBuys, calcMOH: Sums.calcMOH, calcNetPL: Sums.calcNetPL,
-      tickerName: function (tk) { return names[tk] || ""; }
+      tickerName: function (tk) { return names[tk] || ""; }, watchlist: watch
     }, []);
     var marks = {};
     waiting.forEach(function (op) {
+      if (op.op === "watch") { marks["w:" + String(op.ticker).toUpperCase()] = op.uploaded ? "waiting" : "not sent"; return; }
       var id = op.op === "new" ? op.trade.id : op.id;
       marks[String(id)] = op.uploaded ? "waiting" : "not sent";
       if (op.roll) marks[String(op.roll.id)] = marks[String(id)];
     });
     return { trades: r.trades, stocks: r.stocks.filter(function (s) { return (s.status || "Held") !== "Sold"; }),
+             watchlist: Object.keys(r.watchlist).sort().map(function (k) { return { ticker: k, name: r.watchlist[k] }; }),
              marks: marks, waiting: waiting, notes: r.notes };
   }
 
@@ -148,7 +152,7 @@
     var v = view(), set = {};
     v.trades.filter(Sums.isOpen).forEach(function (t) { set[t.ticker] = 1; });
     v.stocks.forEach(function (s) { set[s.ticker] = 1; });
-    (copy.watchlist || []).forEach(function (w) { set[w.ticker] = 1; });
+    v.watchlist.forEach(function (w) { set[w.ticker] = 1; });
     var tickers = Object.keys(set).filter(Boolean), done = 0, failed = [];
     ui.busy = "Getting prices…"; render();
     var next = function () {
@@ -317,15 +321,16 @@
     return h;
   }
 
-  function watchScreen() {
-    var list = copy.watchlist || [];
+  function watchScreen(v) {
+    var list = v.watchlist;
     var h = header("Watchlist", prices.at ? "Prices " + esc(timeOf(prices.at)) : "Tap Refresh prices for live prices");
     h += list.length ? list.map(function (w) {
       var q = prices.q[w.ticker];
       return '<div class="card"><div class="row"><b>' + esc(w.ticker) + "</b><span>" + (q && q.c ? money(q.c) : "") + "</span></div>" +
         '<div class="row"><span class="muted">' + esc(w.name) + "</span>" +
-        (q && q.dp !== undefined && q.dp !== null ? '<span class="' + (q.dp >= 0 ? "up" : "down") + '">' + (q.dp >= 0 ? "+" : "") + Number(q.dp).toFixed(2) + "%</span>" : "") + "</div></div>";
-    }).join("") : '<p class="muted center">Your watchlist is empty. Add tickers on the computer.</p>';
+        (q && q.dp !== undefined && q.dp !== null ? '<span class="' + (q.dp >= 0 ? "up" : "down") + '">' + (q.dp >= 0 ? "+" : "") + Number(q.dp).toFixed(2) + "%</span>" : "") + "</div>" +
+        (v.marks["w:" + w.ticker] ? '<div class="pend">' + (v.marks["w:" + w.ticker] === "waiting" ? "⏳ Waiting for computer" : "📤 Not sent yet") + "</div>" : "") + "</div>";
+    }).join("") : '<p class="muted center">Your watchlist is empty. Tap + to add a stock.</p>';
     h += '<div class="actions"><button class="btn primary" data-act="prices">Refresh prices</button></div>';
     return h;
   }
@@ -357,6 +362,16 @@
       var val = Array.isArray(o) ? o[0] : o, label = Array.isArray(o) ? o[1] : o;
       return '<option value="' + esc(val) + '"' + (String(val) === String(cur) ? " selected" : "") + ">" + esc(label) + "</option>";
     }).join("");
+  }
+
+  function watchForm() {
+    return sheet("<h2>Add to watchlist</h2>" +
+      '<form id="watch-form">' +
+      '<label class="field">Stock symbol<input name="ticker" autocapitalize="characters" autocomplete="off" placeholder="e.g. AAPL"></label>' +
+      '<label class="field">Company name (optional)<input name="name" autocomplete="off" placeholder="e.g. Apple"></label>' +
+      '<p class="muted small">It joins your watchlist on the computer the next time OptionIQ is open there.</p>' +
+      '<p class="err" id="form-err"></p>' +
+      '<div class="actions"><button type="button" class="btn" data-act="close-sheet">Cancel</button><button class="btn primary" type="submit">Add</button></div></form>');
   }
 
   function tradeForm(t, isEdit) {
@@ -495,13 +510,15 @@
     if (!v && ui.tab === "more") body = moreScreen();
     else if (!v) body = header("OptionIQ", "") + '<p class="muted center">' + (ui.busy || "Choose where your OptionIQ data is to get started.") + "</p>" +
       (ui.busy ? "" : '<div class="actions"><button class="btn primary" data-act="tab" data-v="more">Choose my data</button></div>');
-    else body = ui.tab === "trades" ? tradesScreen(v) : ui.tab === "holdings" ? holdingsScreen(v) : ui.tab === "watch" ? watchScreen() : ui.tab === "more" ? moreScreen() : homeScreen(v);
+    else body = ui.tab === "trades" ? tradesScreen(v) : ui.tab === "holdings" ? holdingsScreen(v) : ui.tab === "watch" ? watchScreen(v) : ui.tab === "more" ? moreScreen() : homeScreen(v);
     var problem = ui.problem === "signin" ? '<button class="notice" data-act="signin">Your OneDrive sign-in has ended. Tap to sign in again.</button>'
       : ui.problem ? '<div class="notice">' + esc(ui.problem) + "</div>" : "";
     var tabs = [["home", "Home"], ["trades", "Trades"], ["holdings", "Stocks"], ["watch", "Watch"], ["more", "More"]];
     app.innerHTML = '<main>' + problem + (ui.busy ? '<div class="busy">' + esc(ui.busy) + "</div>" : "") + body +
       '<footer>© 2026 Quantum Nexus LLC. All rights reserved.</footer></main>' +
-      (v ? '<button class="fab" data-act="new" aria-label="New trade">+</button>' : "") +
+      // + logs a trade on Home and Trades, adds a stock on Watch; not shown elsewhere.
+      (v && (ui.tab === "home" || ui.tab === "trades") ? '<button class="fab" data-act="new" aria-label="New trade">+</button>' : "") +
+      (v && ui.tab === "watch" ? '<button class="fab" data-act="watch-add" aria-label="Add to watchlist">+</button>' : "") +
       '<nav>' + tabs.map(function (t) { return '<button data-act="tab" data-v="' + t[0] + '" class="' + (ui.tab === t[0] ? "on" : "") + '">' + t[1] + "</button>"; }).join("") + "</nav>" +
       (ui.sheet || "");
     if (app.querySelector("main")) app.querySelector("main").scrollTop = scroll;
@@ -521,6 +538,7 @@
       case "acct": ui.account = val; render(); break;
       case "prices": refreshPrices(); break;
       case "new": ui.sheet = tradeForm({ account: ui.account !== "All" ? ui.account : (copy.accounts || [])[0] }, false); render(); break;
+      case "watch-add": ui.sheet = watchForm(); render(); break;
       case "open-trade": if (t) { ui.sheet = tradeSheet(t); render(); } break;
       case "edit": if (t) { ui.sheet = tradeForm(t, true); render(); } break;
       case "close-form": if (t) { ui.sheet = closeForm(t); render(); } break;
@@ -606,6 +624,12 @@
         if (!Object.keys(changes).length) { ui.sheet = null; render(); return; }
         change({ op: "edit", id: cur.id, changes: changes, base: base });
       }
+    }
+    if (f.id === "watch-form") {
+      var tk = f.elements.ticker.value.trim().toUpperCase().replace(/^\$/, "");
+      if (!/^[A-Z][A-Z0-9.\-]{0,9}$/.test(tk)) { err.textContent = "Please enter a stock symbol, like AAPL."; return; }
+      if (view().watchlist.some(function (w) { return w.ticker === tk; })) { err.textContent = tk + " is already on your watchlist."; return; }
+      change({ op: "watch", ticker: tk, name: f.elements.name.value.trim() });
     }
     if (f.id === "close-form") {
       var t = findTrade(f.getAttribute("data-id")), g = function (n) { return f.elements[n].value.trim(); };

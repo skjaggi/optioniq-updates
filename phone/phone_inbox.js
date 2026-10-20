@@ -1,7 +1,7 @@
 // Adds changes made on the OptionIQ phone app to the records.
 //
 // The phone never edits the data file. Each change it makes (a new trade, a
-// close or roll, a fix, a delete) arrives as one small file in My Data\Phone\
+// close or roll, a fix, a delete, a ticker added to the watchlist) arrives as one small file in My Data\Phone\
 // inbox (see tracker/phone.py). The trade screen calls applyPhoneOps with the
 // current trades and holdings; the result is saved the same way as a change
 // typed on the computer, using the logger's own sums (passed in as `h`) so a
@@ -105,8 +105,9 @@
   function applyPhoneOps(trades, stocks, ops, h, alreadyApplied) {
     var done = {};
     (alreadyApplied || []).forEach(function (id) { done[id] = true; });
-    var res = { trades: trades.slice(), stocks: stocks.slice(), applied: [], files: [], history: [],
-                notes: [], counts: { added: 0, closed: 0, fixed: 0, deleted: 0, skipped: 0 } };
+    var res = { trades: trades.slice(), stocks: stocks.slice(), watchlist: Object.assign({}, h.watchlist || {}),
+                applied: [], files: [], history: [], notes: [],
+                counts: { added: 0, closed: 0, fixed: 0, deleted: 0, watched: 0, skipped: 0 } };
 
     ops.forEach(function (op, n) {
       if (op.file) res.files.push(op.file);           // read: never try this file again
@@ -133,6 +134,16 @@
                                                     fromPhone: true }), h);
         res.trades.push(t);
         res.counts.added++;
+        return;
+      }
+
+      // Watchlist: {TICKER: "Company Name"}, the same shape the Screener keeps.
+      if (op.op === "watch") {
+        var tk = str(op.ticker).toUpperCase();
+        if (!/^[A-Z][A-Z0-9.\-]{0,9}$/.test(tk)) return skip("\"" + str(op.ticker) + "\" is not a stock symbol.");
+        if (res.watchlist[tk] !== undefined) return;                 // already on it
+        res.watchlist[tk] = str(op.name) || (h.tickerName ? h.tickerName(tk) : "") || "";
+        res.counts.watched++;
         return;
       }
 
@@ -211,6 +222,7 @@
     if (c.closed) parts.push(c.closed + " close" + (c.closed > 1 ? "s" : ""));
     if (c.fixed) parts.push(c.fixed + " fix" + (c.fixed > 1 ? "es" : ""));
     if (c.deleted) parts.push(c.deleted + " delete" + (c.deleted > 1 ? "s" : ""));
+    if (c.watched) parts.push(c.watched + " watchlist ticker" + (c.watched > 1 ? "s" : ""));
     return parts.length ? "📱 Added from your phone: " + parts.join(", ") + "." : "";
   }
 
