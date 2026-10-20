@@ -20,6 +20,23 @@
   function day(v) { return /^\d{4}-\d{2}-\d{2}/.test(str(v)) ? str(v).slice(0, 10) : ""; }
   function num(v) { var n = parseFloat(str(v)); return isNaN(n) ? null : n; }
   function isOpen(t) { return !t.action || t.action === "Open"; }
+  var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  function shortDay(v) { var d = day(v); return d ? MONTHS[+d.slice(5, 7) - 1] + " " + (+d.slice(8, 10)) : ""; }
+  function dollars(v) {
+    var n = Number(v) || 0;
+    return (n < 0 ? "-$" : "$") + Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function contractsText(t) { var q = parseInt(t.contracts, 10) || 1; return q + " contract" + (q > 1 ? "s" : ""); }
+  var FIELD_NAMES = { account: "account", date: "open date", company: "company", ticker: "stock", strike: "strike",
+                      currentStock: "stock price", expDate: "expiry", sellPremium: "premium", contracts: "contracts",
+                      cp: "put/call", sb: "sold/bought", closeDate: "close date", closePremium: "close amount" };
+  function shown(k, v) {
+    return k === "expDate" || k === "date" || k === "closeDate" ? shortDay(v) || "blank"
+         : k === "closePremium" ? (str(v) === "" ? "blank" : dollars(v))
+         : k === "strike" || k === "sellPremium" || k === "currentStock" ? "$" + str(v)
+         : k === "cp" ? (v === "C" ? "call" : "put") : k === "sb" ? (v === "B" ? "bought" : "sold") : str(v) || "blank";
+  }
+
   function label(t) {
     return str(t.ticker).toUpperCase() + " $" + str(t.strike) + " " + (t.cp === "C" ? "call" : "put") +
            (t.account ? " (" + t.account + ")" : "");
@@ -106,7 +123,7 @@
     var done = {};
     (alreadyApplied || []).forEach(function (id) { done[id] = true; });
     var res = { trades: trades.slice(), stocks: stocks.slice(), watchlist: Object.assign({}, h.watchlist || {}),
-                applied: [], files: [], history: [], notes: [],
+                applied: [], files: [], history: [], notes: [], lines: [],
                 counts: { added: 0, closed: 0, fixed: 0, deleted: 0, watched: 0, skipped: 0 } };
 
     ops.forEach(function (op, n) {
@@ -134,6 +151,8 @@
                                                     fromPhone: true }), h);
         res.trades.push(t);
         res.counts.added++;
+        res.lines.push("➕ New trade: " + label(t) + ", " + (t.sb === "B" ? "bought" : "sold") + ", " + contractsText(t) +
+                       " at $" + t.sellPremium + " a share, expires " + shortDay(t.expDate) + " (" + dollars(t.total) + ")");
         return;
       }
 
@@ -144,6 +163,7 @@
         if (res.watchlist[tk] !== undefined) return;                 // already on it
         res.watchlist[tk] = str(op.name) || (h.tickerName ? h.tickerName(tk) : "") || "";
         res.counts.watched++;
+        res.lines.push("👁 Added " + tk + (res.watchlist[tk] ? " (" + res.watchlist[tk] + ")" : "") + " to your watchlist");
         return;
       }
 
@@ -179,6 +199,12 @@
         if (rollTrade && find(rollTrade.id) < 0) res.trades.push(rollTrade);
         res.stocks = shareEffect(cur, action, when, res.stocks, h, idBase, res.notes);
         res.counts.closed++;
+        res.lines.push(rollTrade
+          ? "🔁 Rolled " + label(cur) + " on " + shortDay(when) + " (buy-back " + dollars(cp) + ") into the $" + rollTrade.strike +
+            " " + (rollTrade.cp === "C" ? "call" : "put") + " expiring " + shortDay(rollTrade.expDate) + ", " + contractsText(rollTrade) +
+            " at $" + rollTrade.sellPremium + " a share"
+          : "✅ Closed " + label(cur) + ": " + action + " on " + shortDay(when) + (cp !== "" ? " for " + dollars(cp) : "") +
+            ". Net P&L " + dollars(closed.netPL));
         return;
       }
 
@@ -199,6 +225,9 @@
         res.history.push({ opId: op.opId, at: at, before: cur, after: upd });
         res.trades[i] = upd;
         res.counts.fixed++;
+        res.lines.push("✏️ Fixed " + label(cur) + ": " + EDITABLE.filter(function (k) {
+          return k in changes && str(cur[k]) !== str(upd[k]);
+        }).map(function (k) { return FIELD_NAMES[k] + " " + shown(k, cur[k]) + " → " + shown(k, upd[k]); }).join(", "));
         if (clash) res.notes.push(label(cur) + " was also changed on the computer. The phone's fix, " +
                                   "made later, was kept.");
         return;
@@ -209,6 +238,7 @@
         res.history.push({ opId: op.opId, at: at, before: cur, after: null });
         res.trades.splice(i, 1);
         res.counts.deleted++;
+        res.lines.push("🗑 Deleted " + label(cur) + ", expiring " + shortDay(cur.expDate));
         return;
       }
       skip("unknown kind of change.");
