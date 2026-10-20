@@ -464,9 +464,11 @@
   var trail = [];
   function browse() {
     var here = trail.length ? trail[trail.length - 1].id : "";
-    ui.busy = "Opening OneDrive…"; render();
+    ui.busy = "Opening OneDrive…";
+    if (ui.sheet) ui.sheet = sheet('<h2>Choose your My Data folder</h2><p class="muted">Opening OneDrive…</p>');
+    render();
     Stores.onedrive.listFolders(here).then(function (res) { ui.busy = ""; ui.sheet = folderSheet(trail, res); render(); })
-      .catch(function (e) { ui.busy = ""; ui.problem = e.message === "signin" ? "signin" : "Couldn't open OneDrive: " + e.message; render(); });
+      .catch(function (e) { ui.busy = ""; ui.sheet = null; ui.problem = e.message === "signin" ? "signin" : "Couldn't open OneDrive: " + e.message; render(); });
   }
 
   // ---- first start ------------------------------------------------------------
@@ -503,7 +505,7 @@
     if (app.querySelector("main")) app.querySelector("main").scrollTop = scroll;
   }
 
-  function findTrade(id) { return view().trades.filter(function (t) { return String(t.id) === String(id); })[0]; }
+  function findTrade(id) { var v = view(); return v ? v.trades.filter(function (t) { return String(t.id) === String(id); })[0] : null; }
 
   // ---- taps ---------------------------------------------------------------------
   app.addEventListener("click", function (e) {
@@ -511,7 +513,7 @@
     if (!el) return;
     var act = el.getAttribute("data-act"), id = el.getAttribute("data-id"), val = el.getAttribute("data-v");
     if (el.tagName === "INPUT") return; // switches are handled on change
-    var t = id ? findTrade(id) : null;
+    var t = id && !/^folder-/.test(act) ? findTrade(id) : null;
     switch (act) {
       case "tab": ui.tab = val; ui.sheet = null; render(); app.querySelector("main").scrollTop = 0; break;
       case "acct": ui.account = val; render(); break;
