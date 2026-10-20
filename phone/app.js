@@ -260,7 +260,7 @@
     var line3 = (open && m.pct !== null ? Math.abs(m.pct).toFixed(1) + "% " + (m.pct >= 0 ? "above" : "below") + " strike · " : "") +
                 esc(t.account) + ", " + esc(t.contracts) + " contract" + (String(t.contracts) === "1" ? "" : "s");
     return '<button class="card trade ' + (open && risk(t) ? "risk" : "") + '" data-act="open-trade" data-id="' + esc(t.id) + '">' +
-      '<div class="row"><b>' + title(t) + "</b>" + tagHtml(t) + "</div>" +
+      '<div class="row"><b>' + title(t) + (t.expDate ? " · " + esc(shortDate(t.expDate)) : "") + "</b>" + tagHtml(t) + "</div>" +
       '<div class="muted">' + line2 + "</div>" +
       '<div class="muted">' + line3 + "</div>" +
       (open && risk(t) ? '<div class="warn">Assignment risk</div>' : "") +
