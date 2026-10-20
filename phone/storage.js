@@ -60,7 +60,7 @@
 
   // ---- OneDrive (Microsoft Graph), signed in with the person's own account ----
   var MS = {
-    clientId: "",   // filled in once the OptionIQ Phone app is registered with Microsoft
+    clientId: "9e9a14af-db05-4a9c-a891-943437c1c106",   // "OptionIQ Phone" app registered by Quantum Nexus LLC. (not a secret)
     authority: "https://login.microsoftonline.com/common/oauth2/v2.0",
     scope: "Files.ReadWrite offline_access User.Read",
     graph: "https://graph.microsoft.com/v1.0"
