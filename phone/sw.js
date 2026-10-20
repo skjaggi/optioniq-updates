@@ -1,7 +1,7 @@
 // Lets OptionIQ open with no signal, showing the last data it saw. The app's
 // own files are kept; everything else (OneDrive, Finnhub) always goes online.
 // Bump VERSION with every change to the app's files so phones pick it up.
-var VERSION = "oiq-phone-1.0-5";
+var VERSION = "oiq-phone-1.0-6";
 var FILES = ["./", "index.html", "app.css", "app.js", "storage.js", "phone_inbox.js", "sums.js", "terms.txt",
              "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 
@@ -20,7 +20,9 @@ self.addEventListener("activate", function (e) {
 self.addEventListener("fetch", function (e) {
   var url = new URL(e.request.url);
   if (e.request.method !== "GET" || url.origin !== location.origin) return;
-  e.respondWith(fetch(e.request).then(function (r) {
+  // "no-cache" asks GitHub whether a file changed instead of using the
+  // browser's 10-minute copy, so a fix reaches the phone on the next open.
+  e.respondWith(fetch(url.href, { cache: "no-cache", credentials: "same-origin" }).then(function (r) {
     var copy = r.clone();
     caches.open(VERSION).then(function (c) { c.put(e.request, copy); });
     return r;
