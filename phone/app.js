@@ -492,7 +492,9 @@
     if (settings.terms !== TERMS_VERSION) { app.innerHTML = termsScreen(); return; }
     if (ui.locked && settings.lock) { app.innerHTML = lockScreen(); return; }
     var v = view(), body;
-    if (!v) body = header("OptionIQ", "") + '<p class="muted center">' + (ui.busy || "Choose where your data is in Settings.") + "</p>";
+    if (!v && ui.tab === "more") body = moreScreen();
+    else if (!v) body = header("OptionIQ", "") + '<p class="muted center">' + (ui.busy || "Choose where your OptionIQ data is to get started.") + "</p>" +
+      (ui.busy ? "" : '<div class="actions"><button class="btn primary" data-act="tab" data-v="more">Choose my data</button></div>');
     else body = ui.tab === "trades" ? tradesScreen(v) : ui.tab === "holdings" ? holdingsScreen(v) : ui.tab === "watch" ? watchScreen() : ui.tab === "more" ? moreScreen() : homeScreen(v);
     var problem = ui.problem === "signin" ? '<button class="notice" data-act="signin">Your OneDrive sign-in has ended. Tap to sign in again.</button>'
       : ui.problem ? '<div class="notice">' + esc(ui.problem) + "</div>" : "";
