@@ -1,13 +1,39 @@
 {
-  "version": "1.5.1",
-  "date": "2026-10-19",
-  "notes": "What's new in 1.5.1:\n• 📊 Excel no longer stops with \"Invalid count value\" when a week had more options bought than sold\n• Opening a second copy of OptionIQ (for example a test copy) no longer moves your desktop icon to that copy",
+  "version": "1.6",
+  "date": "2026-10-20",
+  "notes": "What's new in 1.6:\n• 📱 Works with the new OptionIQ phone app: log, close, roll and fix trades and add watchlist stocks on your iPhone; OptionIQ adds them here within a minute or two (your data folder must be in OneDrive). A window lists each change as it comes in\n• Close / Roll and ✏️ Edit now ask for the close price per share (for example 0.30), with no minus sign. OptionIQ works out the total with the $0.67 fee, just like a new trade\n• Date boxes start on today's date\n• The update notice shows only what's new since your version, with the buttons at the top",
+  "history": [
+    {
+      "version": "1.6",
+      "notes": "What's new in 1.6:\n• 📱 Works with the new OptionIQ phone app: log, close, roll and fix trades and add watchlist stocks on your iPhone; OptionIQ adds them here within a minute or two (your data folder must be in OneDrive). A window lists each change as it comes in\n• Close / Roll and ✏️ Edit now ask for the close price per share (for example 0.30), with no minus sign. OptionIQ works out the total with the $0.67 fee, just like a new trade\n• Date boxes start on today's date\n• The update notice shows only what's new since your version, with the buttons at the top"
+    },
+    {
+      "version": "1.5.1",
+      "notes": "New in 1.5.1:\n• 📊 Excel no longer stops with \"Invalid count value\" when a week had more options bought than sold\n• Opening a second copy of OptionIQ (for example a test copy) no longer moves your desktop icon to that copy"
+    },
+    {
+      "version": "1.5",
+      "notes": "New in 1.5:\n• ＋ New Trade and ＋ New Holding now open in a pop-up window, so you can always see them, even when the page is scrolled down\n• ✏️ Edit on a trade or holding also opens a pop-up with large boxes that show the current values"
+    },
+    {
+      "version": "1.4",
+      "notes": "New in 1.4:\n• ⬆ Import now works with your own spreadsheet layout. OptionIQ guesses which column is which, you fix any wrong guess from drop-down lists, and you see a preview before anything is saved\n• Understands words like Put/Call, Sell/Buy, Sell to Open, Closed and Expired, picks the right sheet in an Excel file, and skips totals rows\n• Clear Add and Replace buttons, and your column choices are remembered for next time"
+    },
+    {
+      "version": "1.3.2",
+      "notes": "New in 1.3.2:\n• New versions are offered as soon as you start the app\n• Updates are much faster, show an \"Updating OptionIQ\" window and reopen the app by themselves"
+    },
+    {
+      "version": "1.3",
+      "notes": "New in 1.3:\n• Screener gives each trade a 0–100 Score and lists the best first (hover over the Score to see why)\n• Weekly and Monthly quick settings in the Screener\n• New 🔁 Roll candidates: shows roll choices for your open puts and calls, with your own settings for days, delta, in the money, and puts or calls\n• Premiums shown after the $0.67 fee\n• Warnings for upcoming dividends, too much in one sector, and price support levels\n• The price message at the top can now be closed with ✕"
+    }
+  ],
   "windows": {
     "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ-update.zip",
-    "sha256": "f9b414e0a4cad631cc492eff15f98b780fa2625bb804e81ee41cd1bcf6728ee1"
+    "sha256": "59ebbf96c1198b38d8f13558d1b03faf726ab34cd2c98fdf26eebed44baeac5a"
   },
   "mac": {
     "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ-for-Mac.zip",
-    "sha256": "b7a30b4bc4604df7e1896f8422a8cd60a8b70ae43b9b79d5032d932e99e6fcce"
+    "sha256": "e92dec0b71335e8793ffd604335f0b9fd6a84ff0cb9e547ca729ccca82ae701c"
   }
 }
