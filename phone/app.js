@@ -440,7 +440,7 @@
       '<form id="close-form" data-id="' + esc(t.id) + '">' +
       '<label class="field">How<select name="how" id="close-how">' + options([["back", back], ["roll", "Rolled (close and open a new one)"]], "back") + "</select></label>" +
       '<div class="two"><label class="field">Date<input name="closeDate" type="date" value="' + today() + '"></label>' +
-      '<label class="field">Price $ per share<input name="price" inputmode="decimal" placeholder="e.g. 0.35"></label></div>' +
+      '<label class="field">' + (t.sb === "S" ? "Total paid $" : "Total received $") + '<input name="price" inputmode="decimal" placeholder="e.g. 250.30"></label></div>' +
       '<div id="roll-part" hidden><h3>New trade</h3><div class="two"><label class="field">New strike $<input name="rStrike" inputmode="decimal" value="' + esc(t.strike) + '"></label>' +
       '<label class="field">New expiry<input name="rExp" type="date"></label></div>' +
       '<div class="two"><label class="field">New premium $ per share<input name="rPrem" inputmode="decimal"></label>' +
@@ -449,11 +449,12 @@
       '<div class="actions"><button type="button" class="btn" data-act="close-sheet">Cancel</button><button class="btn primary" type="submit">Save</button></div></form>');
   }
 
-  // The exact dollar amount, as the Close dialog on the computer expects it:
-  // negative when paid, positive when received, with the same $0.67 per contract.
-  function closeAmount(t, price) {
-    var q = parseInt(t.contracts, 10) || 1, gross = price * q * 100, fee = 0.67 * q;
-    return (t.sb === "S" ? -(gross + fee) : gross - fee).toFixed(2);
+  // The total dollars, typed the way the Close dialog on the computer takes
+  // them (fees included). The iPhone keypad has no minus key, so the sign is
+  // added here: paid to buy back a sold option is negative, received is positive.
+  function closeAmount(t, total) {
+    total = Math.abs(total);
+    return (t.sb === "S" ? -total : total).toFixed(2);
   }
 
   function storeSheet() {
@@ -601,7 +602,8 @@
     }
     if (e.target.form && e.target.form.id === "close-form" && e.target.name === "price") {
       var t = findTrade(e.target.form.getAttribute("data-id")), p = num(e.target.value);
-      document.getElementById("close-total").textContent = p === null ? "" : (t.sb === "S" ? "You paid " : "You received ") + money(Math.abs(closeAmount(t, p))) + " including fees.";
+      document.getElementById("close-total").textContent = p === null ? "" : "Saved as " + money(Number(closeAmount(t, p))) +
+        ". Net P/L on this trade: " + money(Sums.calcNetPL(t.total, closeAmount(t, p), t.sb === "S" ? "Bought to Close" : "Sold to Close")) + ".";
     }
   });
 
@@ -634,7 +636,7 @@
     if (f.id === "close-form") {
       var t = findTrade(f.getAttribute("data-id")), g = function (n) { return f.elements[n].value.trim(); };
       var price = num(g("price")), how = g("how"), when = g("closeDate") || today();
-      if (price === null) { err.textContent = "Please enter the price per share."; return; }
+      if (price === null) { err.textContent = t.sb === "S" ? "Please enter the total you paid." : "Please enter the total you received."; return; }
       var op = { op: "close", id: t.id, action: how === "roll" ? "Rolled" : t.sb === "S" ? "Bought to Close" : "Sold to Close",
                  closeDate: when, closePremium: closeAmount(t, price) };
       if (how === "roll") {
