@@ -1,0 +1,42 @@
+OPTIONIQ - TERMS OF USE
+Version 2, October 2026
+
+OptionIQ is (c) 2026 Quantum Nexus LLC. All rights reserved.
+
+By installing or using OptionIQ you agree to these terms.
+
+1. Personal use. You may install and use OptionIQ free of charge to
+   keep track of your own investments.
+
+2. Without written permission from Quantum Nexus LLC., you may not:
+   - sell it, rent it, or charge anyone for it;
+   - change it, copy parts of it into other programs, or remove these
+     notices;
+   - give or send it to anyone else. If a friend would like a copy, please
+     ask Quantum Nexus LLC.
+
+3. Ownership. The app, its design and this manual belong to
+   Quantum Nexus LLC. You get permission to use it, not ownership.
+   Some free building blocks inside the app (for example the libraries that
+   draw the screens and charts, and the Python program it runs on) belong
+   to their own authors and come with their own licence files in the "app"
+   folder; those licences still apply to those parts.
+
+4. Your information. Your trades, settings and price key stay on your own
+   computer (or in the cloud folder you choose). The app sends only ticker
+   symbols to price services such as Finnhub and Yahoo Finance when it looks
+   up prices. Quantum Nexus LLC. does not receive your information.
+
+5. Not financial advice. OptionIQ is a record-keeping tool. Its
+   numbers, screens, ideas and reminders are for information only and are
+   not investment, tax or financial advice. Prices from outside services
+   can be late or wrong. Check important figures with your broker. Options
+   trading involves risk, and you are responsible for your own decisions.
+
+6. No warranty. The app is provided "as is", without any warranty. Keep
+   regular backups. To the fullest extent the law allows,
+   Quantum Nexus LLC. is not liable for any loss arising from using
+   the app, including lost data or trading losses.
+
+7. Changes. These terms may be updated in a later version of the app; you
+   will be asked to agree again.
