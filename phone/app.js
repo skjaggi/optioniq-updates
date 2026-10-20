@@ -291,24 +291,27 @@
   function tradesScreen(v) {
     var q = ui.search.trim().toUpperCase();
     var list = v.trades.filter(inAccount).filter(function (t) {
-      if (!(ui.closed || Sums.isOpen(t)) || (q && String(t.ticker).toUpperCase().indexOf(q) !== 0)) return false;
-      return !settings.days || !Sums.isOpen(t) || daysUntil(t.expDate) <= settings.days;
+      // Open or Closed (90 days): one list at a time.
+      if (Sums.isOpen(t) === ui.closed || (q && String(t.ticker).toUpperCase().indexOf(q) !== 0)) return false;
+      return ui.closed || !settings.days || daysUntil(t.expDate) <= settings.days;
     }).sort(function (a, b) {
       var ao = Sums.isOpen(a), bo = Sums.isOpen(b);
       if (ao !== bo) return ao ? -1 : 1;
       return ao ? String(a.expDate).localeCompare(String(b.expDate)) : String(b.closeDate).localeCompare(String(a.closeDate));
     });
     var d = settings.days, custom = d && [7, 14, 30].indexOf(d) < 0;
-    var h = header("Trades", d ? "Open trades expiring within " + d + " day" + (d > 1 ? "s" : "") : "All open, soonest first");
-    h += '<div class="tools"><input id="search" type="search" placeholder="Find a ticker" value="' + esc(ui.search) + '" autocapitalize="characters">' +
-         '<label class="switch"><input type="checkbox" data-act="closed"' + (ui.closed ? " checked" : "") + "> Closed (90 days)</label></div>";
-    h += '<div class="chips days"><span class="muted small">Expiring in</span>' +
+    var h = header("Trades", ui.closed ? "Closed in the last 90 days, newest first"
+      : d ? "Open trades expiring within " + d + " day" + (d > 1 ? "s" : "") : "All open, soonest first");
+    h += '<div class="tools"><input id="search" type="search" placeholder="Find a ticker" value="' + esc(ui.search) + '" autocapitalize="characters"></div>';
+    h += '<div class="chips"><button class="chip' + (ui.closed ? "" : " on") + '" data-act="closed" data-v="">Open</button>' +
+         '<button class="chip' + (ui.closed ? " on" : "") + '" data-act="closed" data-v="1">Closed (90 days)</button></div>';
+    if (!ui.closed) h += '<div class="chips days"><span class="muted small">Expiring in</span>' +
          [[0, "All"], [7, "7"], [14, "14"], [30, "30"]].map(function (o) {
            return '<button class="chip' + (d === o[0] ? " on" : "") + '" data-act="days" data-v="' + o[0] + '">' + o[1] + "</button>";
          }).join("") +
          '<input id="days" class="chip' + (custom || ui.daysTyped ? " on" : "") + '" inputmode="numeric" placeholder="other" value="' + esc(ui.daysTyped || (custom ? d : "")) + '"><span class="muted small">days</span></div>';
     h += accountChips(v);
-    h += list.length ? list.map(function (t) { return tradeCard(t, v); }).join("") : '<p class="muted center">No trades to show.</p>';
+    h += list.length ? list.map(function (t) { return tradeCard(t, v); }).join("") : '<p class="muted center">' + (ui.closed ? "No trades closed in the last 90 days." : "No trades to show.") + "</p>";
     var openOnes = list.filter(Sums.isOpen);
     if (openOnes.length) h += '<div class="actions"><button class="btn" data-act="cal-all">Add expiries to calendar</button></div>';
     return h;
@@ -560,6 +563,7 @@
     switch (act) {
       case "tab": ui.tab = val; ui.sheet = null; render(); app.querySelector("main").scrollTop = 0; break;
       case "acct": ui.account = val; render(); break;
+      case "closed": ui.closed = !!val; render(); app.querySelector("main").scrollTop = 0; break;
       case "days": settings.days = parseInt(val, 10) || 0; ui.daysTyped = ""; saveState(); render(); break;
       case "prices": refreshPrices(); break;
       case "new": ui.sheet = tradeForm({ account: ui.account !== "All" ? ui.account : (copy.accounts || [])[0] }, false); render(); break;
@@ -608,7 +612,6 @@
 
   app.addEventListener("change", function (e) {
     var act = e.target.getAttribute("data-act");
-    if (act === "closed") { ui.closed = e.target.checked; render(); }
     if (act === "lock") {
       if (e.target.checked) turnLockOn();
       else { settings.lock = false; saveState(); render(); }
