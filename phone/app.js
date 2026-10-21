@@ -311,6 +311,12 @@
            (sub ? '<p class="sub">' + sub + "</p>" : "") + "</div></div></header>";
   }
 
+  // Price time and a Refresh button, kept at the top of long lists.
+  function priceBar() {
+    return '<div class="row pricebar"><span class="muted small">' + (prices.at ? "Prices " + esc(timeOf(prices.at)) : "No live prices yet") + "</span>" +
+      '<button class="btn small primary" data-act="prices">🔄 Refresh prices</button></div>';
+  }
+
   function accountChips(v, size) {
     var accts = ["All"].concat(copy.accounts || []);
     return '<div class="chips' + (size ? " " + size : "") + '">' + accts.map(function (a) {
@@ -477,8 +483,8 @@
     });
     var value = 0, costSum = 0, priced = 0;
     rows.forEach(function (r) { if (r.value !== null && r.cost) { value += r.value; costSum += r.cost * r.sh; priced++; } });
-    var h = header("Holdings", prices.at ? "Prices " + esc(timeOf(prices.at)) : "Stocks you own");
-    h += accountChips(v);
+    var h = header("Holdings", "Stocks you own");
+    h += priceBar() + accountChips(v);
     if (priced) {
       var g = value - costSum;
       h += '<div class="card"><div class="row"><span class="muted">Total value</span><b>' + money(value) + "</b></div>" +
@@ -499,14 +505,13 @@
           (r.gain !== null ? '<span class="' + (r.gain >= 0 ? "up" : "down") + '">' + (r.gain >= 0 ? "+" : "") + money(r.gain) +
             " (" + (r.pct >= 0 ? "+" : "") + r.pct.toFixed(1) + "%)</span>" : "") + "</div>" : "") + "</div>";
     }).join("") : '<p class="muted center">No stocks held.</p>';
-    h += '<div class="actions"><button class="btn primary" data-act="prices">Refresh prices</button></div>';
     h += '<p class="muted small center">Stock buys and sells are entered on the computer. Shares from an assignment appear here automatically.</p>';
     return h;
   }
 
   function watchScreen(v) {
     var list = v.watchlist;
-    var h = header("Watchlist", prices.at ? "Prices " + esc(timeOf(prices.at)) : "Tap Refresh prices for live prices");
+    var h = header("Watchlist", "Stocks you follow") + priceBar();
     h += list.length ? list.map(function (w) {
       var q = prices.q[w.ticker];
       return '<div class="card"><div class="row"><b>' + esc(w.ticker) + "</b><span>" + (q && q.c ? money(q.c) : "") + "</span></div>" +
@@ -514,7 +519,6 @@
         dayChange(q) + "</div>" +
         (v.marks["w:" + w.ticker] ? '<div class="pend">' + (v.marks["w:" + w.ticker] === "waiting" ? "⏳ Waiting for computer" : "📤 Not sent yet") + "</div>" : "") + "</div>";
     }).join("") : '<p class="muted center">Your watchlist is empty. Tap + to add a stock.</p>';
-    h += '<div class="actions"><button class="btn primary" data-act="prices">Refresh prices</button></div>';
     return h;
   }
 
