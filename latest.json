@@ -1,8 +1,12 @@
 {
-  "version": "1.8",
+  "version": "1.9",
   "date": "2026-10-21",
-  "notes": "What's new in 1.8:\n• New 🏦 Broker files button next to ⬆ Import: bring in your Fidelity Positions and Activity & Orders downloads. OptionIQ shows new trades, closes, stock buys and sells and reinvested dividends, and you choose what to add. Nothing is counted twice\n• It also checks your share counts and cost per share against Fidelity and lets you tick the fixes you want\n• 🌐 Get from Fidelity opens the Fidelity pages for you; download the files there and OptionIQ picks them up from your Downloads folder by itself\n• You can pick several yearly Activity files at once\n• New setup step and Settings card \"Cost per share\": reinvested dividend shares at $0 or at their price, and assigned put shares at the strike or at Fidelity's lower cost",
+  "notes": "What's new in 1.9:\n• New 🎯 80%+ profit button on the Options tab: shows the open trades that have already captured most of their profit, so you can decide to close or roll. Change the % in ⚙ Filters (Profit captured ≥ %); it is remembered\n• Bought options count too: their gain on what you paid\n• While OptionIQ is open, 🔄 Prices runs by itself every 15 minutes during US market hours\n• The phone app now shows each option's price next to what you sold it at (or paid), how much profit is captured, and a 🎯 list of the ones at your target",
   "history": [
+    {
+      "version": "1.9",
+      "notes": "What's new in 1.9:\n• New 🎯 80%+ profit button on the Options tab: shows the open trades that have already captured most of their profit, so you can decide to close or roll. Change the % in ⚙ Filters (Profit captured ≥ %); it is remembered\n• Bought options count too: their gain on what you paid\n• While OptionIQ is open, 🔄 Prices runs by itself every 15 minutes during US market hours\n• The phone app now shows each option's price next to what you sold it at (or paid), how much profit is captured, and a 🎯 list of the ones at your target"
+    },
     {
       "version": "1.8",
       "notes": "What's new in 1.8:\n• New 🏦 Broker files button next to ⬆ Import: bring in your Fidelity Positions and Activity & Orders downloads. OptionIQ shows new trades, closes, stock buys and sells and reinvested dividends, and you choose what to add. Nothing is counted twice\n• It also checks your share counts and cost per share against Fidelity and lets you tick the fixes you want\n• 🌐 Get from Fidelity opens the Fidelity pages for you; download the files there and OptionIQ picks them up from your Downloads folder by itself\n• You can pick several yearly Activity files at once\n• New setup step and Settings card \"Cost per share\": reinvested dividend shares at $0 or at their price, and assigned put shares at the strike or at Fidelity's lower cost"
@@ -38,10 +42,10 @@
   ],
   "windows": {
     "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ-update.zip",
-    "sha256": "9b0f99c935b353327c185594f498049f15142d441d4ff2a96081890dd1185323"
+    "sha256": "9774eaff7d82deb11e6815a911c3b0bc8dd832422febab5bafb9daefefb5bd42"
   },
   "mac": {
     "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ-for-Mac.zip",
-    "sha256": "c2e1fc93104759e50d7af3ba79505811ce7316c07f6eb70b6b7ef27d6b229032"
+    "sha256": "9adea4a1704cedd9cc92d37547267e02926c17a0995a6acdcc79072bf9292d8a"
   }
 }
