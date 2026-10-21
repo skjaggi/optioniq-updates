@@ -219,7 +219,11 @@
 
   function stockPrices() {
     var key = copy && copy.finnhubKey;
-    if (!key && copy && copy.sample) { ui.busy = ""; render(); return; }   // sample data has no key; option prices still came in
+    if (!key && copy && copy.sample) {   // sample data has no key: use its made-up prices; option prices still came in
+      Object.keys(copy.quotes || {}).forEach(function (tk) { prices.q[tk] = copy.quotes[tk]; });
+      prices.at = new Date().toISOString(); keep("oiq_prices", prices);
+      ui.busy = ""; render(); return;
+    }
     if (!key) { ui.busy = ""; render(); alert("No Finnhub key yet. Enter it once in OptionIQ on your computer (🔑 Set Key); it reaches the phone on the next sync."); return; }
     var v = view(), set = {};
     v.trades.filter(Sums.isOpen).forEach(function (t) { set[t.ticker] = 1; });
@@ -232,7 +236,7 @@
       if (!tk) return Promise.resolve();
       return fetch("https://finnhub.io/api/v1/quote?symbol=" + encodeURIComponent(tk) + "&token=" + encodeURIComponent(key), { cache: "no-store" })
         .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-        .then(function (j) { if (j && j.c) { prices.q[tk] = { c: j.c, dp: j.dp }; done++; } else failed.push(tk); })
+        .then(function (j) { if (j && j.c) { prices.q[tk] = { c: j.c, d: j.d, dp: j.dp }; done++; } else failed.push(tk); })
         .catch(function () { failed.push(tk); })
         .then(next);
     };
@@ -447,17 +451,55 @@
     return best || copy.optionPrices.at;
   }
 
+  // Today's move for a ticker (from Refresh prices): "▲ $0.52 (0.87%)".
+  function dayChange(q) {
+    if (!q || q.dp === undefined || q.dp === null) return "";
+    var d = num(q.d), up = q.dp >= 0;
+    return '<span class="nowrap ' + (up ? "up" : "down") + '">' + (up ? "▲ " : "▼ ") + (d !== null ? money(Math.abs(d)) + " (" : "") +
+      Math.abs(Number(q.dp)).toFixed(2) + "%" + (d !== null ? ")" : "") + "</span>";
+  }
+
+  var STOCK_SORTS = [["ticker", "Symbol"], ["price", "Price"], ["value", "Value"], ["shares", "Shares"], ["gain", "Gain %"]];
+
   function holdingsScreen(v) {
-    var list = v.stocks.filter(inAccount);
-    var h = header("Holdings", "Stocks you own");
+    var rows = v.stocks.filter(inAccount).map(function (s) {
+      var q = prices.q[s.ticker], px = q && q.c || num(s.currentPrice), cost = num(s.costBasis), sh = num(s.shares) || 0;
+      return { s: s, q: q, px: px, cost: cost, sh: sh, value: px ? px * sh : null,
+               gain: px && cost ? (px - cost) * sh : null, pct: px && cost ? (px - cost) / cost * 100 : null };
+    });
+    var sort = settings.stockSort || "ticker", dir = settings.stockDir || (sort === "ticker" ? 1 : -1);
+    rows.sort(function (a, b) {
+      if (sort === "ticker") return dir * String(a.s.ticker).localeCompare(String(b.s.ticker));
+      var k = { price: "px", value: "value", shares: "sh", gain: "pct" }[sort], x = a[k], y = b[k];
+      if (x === null || x === undefined) return 1;
+      if (y === null || y === undefined) return -1;
+      return dir * (x - y) || String(a.s.ticker).localeCompare(String(b.s.ticker));
+    });
+    var value = 0, costSum = 0, priced = 0;
+    rows.forEach(function (r) { if (r.value !== null && r.cost) { value += r.value; costSum += r.cost * r.sh; priced++; } });
+    var h = header("Holdings", prices.at ? "Prices " + esc(timeOf(prices.at)) : "Stocks you own");
     h += accountChips(v);
-    h += list.length ? list.map(function (s) {
-      var px = prices.q[s.ticker] && prices.q[s.ticker].c || num(s.currentPrice), cost = num(s.costBasis), sh = num(s.shares) || 0;
-      var gain = px && cost ? (px - cost) * sh : null;
-      return '<div class="card"><div class="row"><b>' + esc(s.ticker) + "</b><span>" + (px ? money(px) : "") + "</span></div>" +
-        '<div class="muted">' + esc(sh) + " shares at " + money(cost) + (s.status === "Assigned" ? ", assigned" : "") + " · " + esc(s.account) + "</div>" +
-        (gain !== null ? '<div class="' + (gain >= 0 ? "up" : "down") + '">' + (gain >= 0 ? "+" : "") + money(gain) + "</div>" : "") + "</div>";
+    if (priced) {
+      var g = value - costSum;
+      h += '<div class="card"><div class="row"><span class="muted">Total value</span><b>' + money(value) + "</b></div>" +
+        '<div class="row"><span class="muted">Total gain / loss</span><span class="' + (g >= 0 ? "up" : "down") + '">' + (g >= 0 ? "+" : "") + money(g) +
+        " (" + (g >= 0 ? "+" : "") + (costSum ? (g / costSum * 100).toFixed(1) : "0.0") + "%)</span></div></div>";
+    }
+    if (rows.length > 1) h += '<div class="chips sm"><span class="muted small">Sort</span>' + STOCK_SORTS.map(function (o) {
+      var on = sort === o[0];
+      return '<button class="chip' + (on ? " on" : "") + '" data-act="stock-sort" data-v="' + o[0] + '">' + o[1] +
+        (on ? (dir > 0 ? " ↑" : " ↓") : "") + "</button>";
+    }).join("") + "</div>";
+    h += rows.length ? rows.map(function (r) {
+      var s = r.s;
+      return '<div class="card"><div class="row"><b>' + esc(s.ticker) + "</b><span>" + (r.px ? money(r.px) : "") + "</span></div>" +
+        (dayChange(r.q) ? '<div class="row"><span class="muted">Today</span>' + dayChange(r.q) + "</div>" : "") +
+        '<div class="muted">' + esc(r.sh) + " shares at " + money(r.cost) + (s.status === "Assigned" ? ", assigned" : "") + " · " + esc(s.account) + "</div>" +
+        (r.value !== null ? '<div class="row"><span class="muted">Value ' + money(r.value) + "</span>" +
+          (r.gain !== null ? '<span class="' + (r.gain >= 0 ? "up" : "down") + '">' + (r.gain >= 0 ? "+" : "") + money(r.gain) +
+            " (" + (r.pct >= 0 ? "+" : "") + r.pct.toFixed(1) + "%)</span>" : "") + "</div>" : "") + "</div>";
     }).join("") : '<p class="muted center">No stocks held.</p>';
+    h += '<div class="actions"><button class="btn primary" data-act="prices">Refresh prices</button></div>';
     h += '<p class="muted small center">Stock buys and sells are entered on the computer. Shares from an assignment appear here automatically.</p>';
     return h;
   }
@@ -469,7 +511,7 @@
       var q = prices.q[w.ticker];
       return '<div class="card"><div class="row"><b>' + esc(w.ticker) + "</b><span>" + (q && q.c ? money(q.c) : "") + "</span></div>" +
         '<div class="row"><span class="muted">' + esc(w.name) + "</span>" +
-        (q && q.dp !== undefined && q.dp !== null ? '<span class="' + (q.dp >= 0 ? "up" : "down") + '">' + (q.dp >= 0 ? "+" : "") + Number(q.dp).toFixed(2) + "%</span>" : "") + "</div>" +
+        dayChange(q) + "</div>" +
         (v.marks["w:" + w.ticker] ? '<div class="pend">' + (v.marks["w:" + w.ticker] === "waiting" ? "⏳ Waiting for computer" : "📤 Not sent yet") + "</div>" : "") + "</div>";
     }).join("") : '<p class="muted center">Your watchlist is empty. Tap + to add a stock.</p>';
     h += '<div class="actions"><button class="btn primary" data-act="prices">Refresh prices</button></div>';
@@ -700,6 +742,10 @@
       case "closed": ui.closed = !!val; render(); app.querySelector("main").scrollTop = 0; break;
       case "period": settings.period = val === "month" ? "month" : "week"; saveState(); render(); break;
       case "profit": ui.profit = !ui.profit; render(); break;
+      case "stock-sort":   // tap again to flip the order
+        if ((settings.stockSort || "ticker") === val) settings.stockDir = -(settings.stockDir || (val === "ticker" ? 1 : -1));
+        else { settings.stockSort = val; settings.stockDir = val === "ticker" ? 1 : -1; }
+        saveState(); render(); break;
       case "profit-list": ui.tab = "trades"; ui.closed = false; ui.profit = true; settings.days = 0; ui.daysTyped = ""; settings.cp = ""; ui.search = ""; saveState(); render(); break;
       case "cp": settings.cp = val === "C" || val === "P" ? val : ""; saveState(); render(); break;
       case "days": settings.days = parseInt(val, 10) || 0; ui.daysTyped = ""; saveState(); render(); break;

@@ -64,7 +64,17 @@
       accounts: ["IRA", "Roth"], reminderDays: 7, finnhubKey: "", appliedOps: [],
       trades: trades,
       stocks: [{ id: 50, account: "Roth", ticker: "KO", company: "Coca-Cola", shares: "200", dateAcquired: iso(-60),
-                 costBasis: "64", currentPrice: "60.40", status: "Assigned" }],
+                 costBasis: "64", currentPrice: "60.40", status: "Assigned" },
+               { id: 51, account: "IRA", ticker: "AAPL", company: "Apple", shares: "50", dateAcquired: iso(-400),
+                 costBasis: "172.50", currentPrice: "231.10", status: "Held" },
+               { id: 52, account: "IRA", ticker: "NVDA", company: "NVIDIA", shares: "120", dateAcquired: iso(-200),
+                 costBasis: "118", currentPrice: "137.80", status: "Held" },
+               { id: 53, account: "Roth", ticker: "PFE", company: "Pfizer", shares: "300", dateAcquired: iso(-500),
+                 costBasis: "34.20", currentPrice: "28.90", status: "Held" }],
+      // Made-up "today" prices for Refresh prices (sample data has no Finnhub key).
+      quotes: { KO: { c: 60.92, d: 0.52, dp: 0.86 }, AAPL: { c: 229.35, d: -1.75, dp: -0.76 },
+                NVDA: { c: 139.6, d: 1.8, dp: 1.31 }, PFE: { c: 28.71, d: -0.19, dp: -0.66 },
+                MSFT: { c: 421.5, d: 3.1, dp: 0.74 } },
       watchlist: [{ ticker: "AAPL", name: "Apple" }, { ticker: "NVDA", name: "NVIDIA" }, { ticker: "KO", name: "Coca-Cola" }]
     };
   }
