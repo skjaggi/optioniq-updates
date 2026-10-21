@@ -17,6 +17,8 @@
       var x = new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
       return x.getFullYear() + "-" + String(x.getMonth() + 1).padStart(2, "0") + "-" + String(x.getDate()).padStart(2, "0");
     };
+    // Expiries land on a Friday, like real ones, so live prices can be looked up.
+    var fri = function (n) { var x = new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); return iso(n + (5 - x.getDay() + 7) % 7); };
     var S = root.OptionIQSums, rows = [
       [1, "IRA", "AAPL", "P", "S", "180", "183.10", 2, "1.20", 2, -9],
       [2, "IRA", "MSFT", "C", "S", "420", "405.30", 5, "2.10", 1, -12],
@@ -26,7 +28,7 @@
     ];
     var trades = rows.map(function (r) {
       var t = { id: r[0], account: r[1], ticker: r[2], cp: r[3], sb: r[4], strike: r[5], currentStock: r[6],
-                expDate: iso(r[7]), sellPremium: r[8], contracts: String(r[9]), date: iso(r[10]), company: "",
+                expDate: fri(r[7]), sellPremium: r[8], contracts: String(r[9]), date: iso(r[10]), company: "",
                 action: "Open", closeDate: "", closePremium: "" };
       t.total = S.calcSells(t.sb, t.sellPremium, t.contracts) + S.calcBuys(t.sb, t.sellPremium, t.contracts);
       t.netPL = t.total; t.moneyOnHold = S.calcMOH(t);
@@ -38,7 +40,7 @@
     done.total = S.calcSells("S", "2.00", "1"); done.netPL = done.total; done.moneyOnHold = 0;
     trades.push(done);
     var bought = { id: 7, account: "IRA", ticker: "NVDA", cp: "C", sb: "B", strike: "140", currentStock: "143.20",
-                   expDate: iso(16), sellPremium: "2.00", contracts: "1", date: iso(-6), company: "",
+                   expDate: fri(16), sellPremium: "2.00", contracts: "1", date: iso(-6), company: "",
                    action: "Open", closeDate: "", closePremium: "" };
     bought.total = S.calcSells("B", "2.00", "1") + S.calcBuys("B", "2.00", "1"); bought.netPL = bought.total; bought.moneyOnHold = 0;
     trades.push(bought);
