@@ -1,8 +1,12 @@
 {
-  "version": "1.7",
+  "version": "1.8",
   "date": "2026-10-21",
-  "notes": "What's new in 1.7:\n• A small Week | Month switch above the boxes on 📋 Options: Month shows this month's net P&L, this month's premium and the average monthly net P&L. Your choice is remembered\n• 📱 The phone app's Home screen now shows the same 8 boxes as the computer, with the same Week | Month switch",
+  "notes": "What's new in 1.8:\n• New 🏦 Broker files button next to ⬆ Import: bring in your Fidelity Positions and Activity & Orders downloads. OptionIQ shows new trades, closes, stock buys and sells and reinvested dividends, and you choose what to add. Nothing is counted twice\n• It also checks your share counts and cost per share against Fidelity and lets you tick the fixes you want\n• 🌐 Get from Fidelity opens the Fidelity pages for you; download the files there and OptionIQ picks them up from your Downloads folder by itself\n• You can pick several yearly Activity files at once\n• New setup step and Settings card \"Cost per share\": reinvested dividend shares at $0 or at their price, and assigned put shares at the strike or at Fidelity's lower cost",
   "history": [
+    {
+      "version": "1.8",
+      "notes": "What's new in 1.8:\n• New 🏦 Broker files button next to ⬆ Import: bring in your Fidelity Positions and Activity & Orders downloads. OptionIQ shows new trades, closes, stock buys and sells and reinvested dividends, and you choose what to add. Nothing is counted twice\n• It also checks your share counts and cost per share against Fidelity and lets you tick the fixes you want\n• 🌐 Get from Fidelity opens the Fidelity pages for you; download the files there and OptionIQ picks them up from your Downloads folder by itself\n• You can pick several yearly Activity files at once\n• New setup step and Settings card \"Cost per share\": reinvested dividend shares at $0 or at their price, and assigned put shares at the strike or at Fidelity's lower cost"
+    },
     {
       "version": "1.7",
       "notes": "What's new in 1.7:\n• A small Week | Month switch above the boxes on 📋 Options: Month shows this month's net P&L, this month's premium and the average monthly net P&L. Your choice is remembered\n• 📱 The phone app's Home screen now shows the same 8 boxes as the computer, with the same Week | Month switch"
@@ -34,10 +38,10 @@
   ],
   "windows": {
     "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ-update.zip",
-    "sha256": "96da1db86fee94e34b52a7b3f09949653c646e5dc71c102eb7b12028e6713517"
+    "sha256": "9b0f99c935b353327c185594f498049f15142d441d4ff2a96081890dd1185323"
   },
   "mac": {
     "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ-for-Mac.zip",
-    "sha256": "91e333b86b5519d613d16e7fe36a0d31573acd577f104525c799e350b0d36190"
+    "sha256": "c2e1fc93104759e50d7af3ba79505811ce7316c07f6eb70b6b7ef27d6b229032"
   }
 }
