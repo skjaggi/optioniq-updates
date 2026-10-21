@@ -37,8 +37,19 @@
                  action: "Expired", closeDate: iso(-4), closePremium: "" };
     done.total = S.calcSells("S", "2.00", "1"); done.netPL = done.total; done.moneyOnHold = 0;
     trades.push(done);
+    // Made-up summary cards, as the computer would send them.
+    var card = function (period, k) {
+      var M = period === "month";
+      return { period: period, total: 2486.4 * k, periodPL: (M ? 734.2 : 198.66) * k,
+               prem: { puts: (M ? 1630.1 : 466.1) * k, calls: (M ? 412.5 : 207.3) * k, total: (M ? 2042.6 : 673.4) * k },
+               avg: (M ? 612.4 : 141.3) * k, units: M ? 4.1 : 17.6, since: iso(-123), open: 1265.3 * k,
+               openCount: Math.round(5 * k), closedCount: Math.round(31 * k), hold: Math.round(69600 * k) };
+    };
+    var both = function (k) { return { week: card("week", k), month: card("month", k) }; };
+    var summary = { at: new Date(Date.now() - 50 * 60000).toISOString(), all: both(1),
+                    accounts: { IRA: both(0.6), Roth: both(0.4) } };
     return {
-      version: 1, sample: true, writtenAt: new Date(Date.now() - 50 * 60000).toISOString(),
+      version: 1, sample: true, summary: summary, writtenAt: new Date(Date.now() - 50 * 60000).toISOString(),
       accounts: ["IRA", "Roth"], reminderDays: 7, finnhubKey: "", appliedOps: [],
       trades: trades,
       stocks: [{ id: 50, account: "Roth", ticker: "KO", company: "Coca-Cola", shares: "200", dateAcquired: iso(-60),

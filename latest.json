@@ -1,8 +1,12 @@
 {
-  "version": "1.6",
-  "date": "2026-10-20",
-  "notes": "What's new in 1.6:\n• 📱 Works with the new OptionIQ phone app: log, close, roll and fix trades and add watchlist stocks on your iPhone; OptionIQ adds them here within a minute or two (your data folder must be in OneDrive). A window lists each change as it comes in\n• Close / Roll and ✏️ Edit now ask for the close price per share (for example 0.30), with no minus sign. OptionIQ works out the total with the $0.67 fee, just like a new trade\n• Date boxes start on today's date\n• The update notice shows only what's new since your version, with the buttons at the top",
+  "version": "1.7",
+  "date": "2026-10-21",
+  "notes": "What's new in 1.7:\n• A small Week | Month switch above the boxes on 📋 Options: Month shows this month's net P&L, this month's premium and the average monthly net P&L. Your choice is remembered\n• 📱 The phone app's Home screen now shows the same 8 boxes as the computer, with the same Week | Month switch",
   "history": [
+    {
+      "version": "1.7",
+      "notes": "What's new in 1.7:\n• A small Week | Month switch above the boxes on 📋 Options: Month shows this month's net P&L, this month's premium and the average monthly net P&L. Your choice is remembered\n• 📱 The phone app's Home screen now shows the same 8 boxes as the computer, with the same Week | Month switch"
+    },
     {
       "version": "1.6",
       "notes": "What's new in 1.6:\n• 📱 Works with the new OptionIQ phone app: log, close, roll and fix trades and add watchlist stocks on your iPhone; OptionIQ adds them here within a minute or two (your data folder must be in OneDrive). A window lists each change as it comes in\n• Close / Roll and ✏️ Edit now ask for the close price per share (for example 0.30), with no minus sign. OptionIQ works out the total with the $0.67 fee, just like a new trade\n• Date boxes start on today's date\n• The update notice shows only what's new since your version, with the buttons at the top"
@@ -30,10 +34,10 @@
   ],
   "windows": {
     "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ-update.zip",
-    "sha256": "59ebbf96c1198b38d8f13558d1b03faf726ab34cd2c98fdf26eebed44baeac5a"
+    "sha256": "96da1db86fee94e34b52a7b3f09949653c646e5dc71c102eb7b12028e6713517"
   },
   "mac": {
     "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ-for-Mac.zip",
-    "sha256": "e92dec0b71335e8793ffd604335f0b9fd6a84ff0cb9e547ca729ccca82ae701c"
+    "sha256": "91e333b86b5519d613d16e7fe36a0d31573acd577f104525c799e350b0d36190"
   }
 }
