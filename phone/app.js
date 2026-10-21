@@ -48,6 +48,8 @@
   function optNow(t) {
     var p = copy && copy.optionPrices && copy.optionPrices.prices;
     var q = p && Sums.isOpen(t) ? p[String(t.id)] : null;
+    var live = prices.opt && Sums.isOpen(t) ? prices.opt[String(t.id)] : null;
+    if (live && (!q || !q.at || live.at > q.at)) q = live;   // the newest price wins
     if (!q || !(Number(q.price) >= 0)) return null;
     var prem = num(t.sellPremium), price = Number(q.price);
     var pct = prem > 0 ? (t.sb === "B" ? price - prem : prem - price) / prem * 100 : null;
@@ -165,9 +167,60 @@
   }
 
   // ---- live prices (the person's own Finnhub key, from the computer) -------
+  // Refresh prices first fetches the computer's newest copy (its latest option
+  // prices), then live stock prices from Finnhub.
+  // Then live option prices from the OptionIQ price server, when there is one.
   function refreshPrices() {
+    var go = function () { optionPrices().then(stockPrices); };
+    sync().then(go, go);
+  }
+
+  // Live option prices for the open trades, from the small OptionIQ price
+  // server (Yahoo Finance, like the computer). Kept by trade id with the time.
+  var PRICE_SERVER = "https://optioniq-prices.helloquantumnexus.workers.dev";
+  function optionPrices() {
+    if (!PRICE_SERVER || !copy) return Promise.resolve();
+    var open = view().trades.filter(Sums.isOpen).filter(function (t) { return t.ticker && t.expDate && num(t.strike); });
+    var byKey = {};
+    open.forEach(function (t) {
+      var k = String(t.ticker).trim().toUpperCase() + "|" + String(t.expDate).slice(0, 10) + "|" + num(t.strike) + "|" + (t.cp === "C" ? "C" : "P");
+      (byKey[k] = byKey[k] || []).push(String(t.id));
+    });
+    // At most 40 ticker + expiry pairs per request (the server's limit).
+    var batches = [], cur = [], chains = {};
+    Object.keys(byKey).forEach(function (k) {
+      var chainKey = k.split("|").slice(0, 2).join("|");
+      if (!chains[chainKey] && Object.keys(chains).length >= 40) { batches.push(cur); cur = []; chains = {}; }
+      chains[chainKey] = 1; cur.push(k);
+    });
+    if (cur.length) batches.push(cur);
+    if (!batches.length) return Promise.resolve();
+    ui.busy = "Getting option prices…"; render();
+    prices.opt = prices.opt || {};
+    var got = 0;
+    return batches.reduce(function (chain, list) {
+      return chain.then(function () {
+        return fetch(PRICE_SERVER + "/quotes?c=" + encodeURIComponent(list.join(",")), { cache: "no-store" })
+          .then(function (r) { return r.json(); })
+          .then(function (j) {
+            var at = Date.now();
+            (j && j.results || []).forEach(function (q) {
+              if (q.price == null || !byKey[q.c]) return;
+              byKey[q.c].forEach(function (id) { prices.opt[id] = { price: q.price, mid: q.mid != null, at: at }; });
+              got++;
+            });
+          });
+      });
+    }, Promise.resolve()).catch(function () { /* the computer's prices are still shown */ }).then(function () {
+      if (got) prices.optAt = new Date().toISOString();
+      keep("oiq_prices", prices);
+    });
+  }
+
+  function stockPrices() {
     var key = copy && copy.finnhubKey;
-    if (!key) { alert("No Finnhub key yet. Enter it once in OptionIQ on your computer (🔑 Set Key); it reaches the phone on the next sync."); return; }
+    if (!key && copy && copy.sample) { ui.busy = ""; render(); return; }   // sample data has no key; option prices still came in
+    if (!key) { ui.busy = ""; render(); alert("No Finnhub key yet. Enter it once in OptionIQ on your computer (🔑 Set Key); it reaches the phone on the next sync."); return; }
     var v = view(), set = {};
     v.trades.filter(Sums.isOpen).forEach(function (t) { set[t.ticker] = 1; });
     v.stocks.forEach(function (s) { set[s.ticker] = 1; });
@@ -379,7 +432,12 @@
     h += list.length ? list.map(function (t) { return tradeCard(t, v); }).join("") : '<p class="muted center">' + (ui.closed ? "No trades closed in the last 90 days." : "No trades to show.") + "</p>";
     var openOnes = list.filter(Sums.isOpen);
     if (openOnes.length) h += '<div class="actions"><button class="btn" data-act="cal-all">Add expiries to calendar</button></div>';
-    if (!ui.closed && copy.optionPrices && copy.optionPrices.at) h += '<p class="muted small center">Option prices from your computer\'s last 🔄 Prices, ' + esc(timeOf(newestPrice())) + ".</p>";
+    if (!ui.closed) {
+      var pcAt = copy.optionPrices && copy.optionPrices.at ? new Date(newestPrice()).getTime() : 0;
+      var liveAt = prices.optAt ? new Date(prices.optAt).getTime() : 0;
+      if (liveAt > pcAt) h += '<p class="muted small center">Live option prices, ' + esc(timeOf(prices.optAt)) + ".</p>";
+      else if (pcAt) h += '<p class="muted small center">Option prices from your computer\'s last 🔄 Prices, ' + esc(timeOf(pcAt)) + ". Tap Refresh prices on Home for newer ones.</p>";
+    }
     return h;
   }
 
