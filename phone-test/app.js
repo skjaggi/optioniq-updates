@@ -48,6 +48,7 @@
   var settings = load("oiq_settings", { store: "sample", nearPct: 3, lock: false, terms: "" });
   if (!(settings.days >= 0)) settings.days = 0;   // Trades tab: open trades expiring within this many days (0 = all)
   if (settings.cp !== "C" && settings.cp !== "P") settings.cp = "";   // Trades tab: calls, puts or both
+  if (settings.period !== "month") settings.period = "week";          // Home: summary cards for the week or the month
   var copy = load("oiq_copy_" + settings.store, null);
   var pending = load("oiq_pending_" + settings.store, []);
   var prices = load("oiq_prices", { at: "", q: {} });
@@ -280,13 +281,42 @@
     var h = header("OptionIQ", copy.sample ? "Sample data, not your trades" : "Prices as of " + esc(timeOf(prices.at || copy.writtenAt)));
     h += accountChips(v);
     if (soon.length) h += '<button class="card banner" data-act="tab" data-v="trades"><b>' + soon.length + " trade" + (soon.length > 1 ? "s" : "") + " expire" + (soon.length > 1 ? "" : "s") + " within 2 days</b></button>";
-    h += '<div class="card"><div class="muted">Premium this month</div><div class="big">' + money(prem) + "</div></div>";
-    h += '<div class="card"><div class="muted">Open trades</div><div class="big">' + open.length + (ui.account === "All" && accts > 1 ? " in " + accts + " accounts" : "") + "</div></div>";
-    h += '<div class="card"><div class="muted">Money held for puts</div><div class="big">' + money(held, false) + "</div></div>";
+    var sum = copy.summary && (ui.account === "All" ? copy.summary.all : (copy.summary.accounts || {})[ui.account]);
+    if (sum && sum.week && sum.month) h += summaryTiles(sum[settings.period]);
+    else {  // a computer older than OptionIQ 1.7 doesn't send the cards
+      h += '<div class="card"><div class="muted">Premium this month</div><div class="big">' + money(prem) + "</div></div>";
+      h += '<div class="card"><div class="muted">Open trades</div><div class="big">' + open.length + (ui.account === "All" && accts > 1 ? " in " + accts + " accounts" : "") + "</div></div>";
+      h += '<div class="card"><div class="muted">Money held for puts</div><div class="big">' + money(held, false) + "</div></div>";
+    }
     if (v.waiting.length) h += '<div class="card"><div class="muted">Waiting for computer</div><div class="big">' + v.waiting.length + " change" + (v.waiting.length > 1 ? "s" : "") + "</div><div class='muted small'>Added next time OptionIQ is open on your computer.</div></div>";
     h += '<div class="actions"><button class="btn primary" data-act="prices">Refresh prices</button></div>';
+    if (sum && copy.summary.at) h += '<p class="muted small center">Totals from your computer, ' + esc(timeOf(copy.summary.at)) + ".</p>";
     if (prices.at) h += '<p class="muted small center">Live stock prices from Finnhub, ' + esc(timeOf(prices.at)) + ". Profit and loss from your computer, " + esc(timeOf(copy.writtenAt)) + ".</p>";
     return h;
+  }
+
+  // The same eight cards as on top of the computer's Options tab, worked out
+  // by the computer (the phone doesn't have every closed trade).
+  function summaryTiles(c) {
+    var M = c.period === "month", P = M ? "This month's" : "This week's";
+    var pl = function (v) { return '<span class="' + (v < 0 ? "neg" : "pos") + '">' + money(v) + "</span>"; };
+    var tile = function (label, val, sub) {
+      return '<div class="tile"><div class="muted">' + label + '</div><div class="val">' + val + "</div>" + (sub ? '<div class="sub">' + sub + "</div>" : "") + "</div>";
+    };
+    return '<div class="chips sm period"><span class="seg">' + [["week", "Week"], ["month", "Month"]].map(function (o) {
+        return '<button class="chip' + (settings.period === o[0] ? " on" : "") + '" data-act="period" data-v="' + o[0] + '">' + o[1] + "</button>";
+      }).join("") + "</span></div>" +
+      '<div class="tiles">' +
+      tile("Total net P&L", pl(c.total)) +
+      tile(P + " net P&L", pl(c.periodPL)) +
+      tile(P + " premium", pl(c.prem.total), "Puts " + money(c.prem.puts) + " · Calls " + money(c.prem.calls)) +
+      tile(M ? "Avg monthly net P&L (closed)" : "Avg weekly net P&L (closed)", pl(c.avg),
+           c.since ? "since " + esc(shortDate(c.since)) + " · " + Number(c.units).toFixed(1) + (M ? " mo" : " wk") : "") +
+      tile("Open positions net P&L", pl(c.open)) +
+      tile("Open positions", '<span class="amber">' + c.openCount + "</span>") +
+      tile("Closed trades", '<span class="blue">' + c.closedCount + "</span>") +
+      tile("Money held for puts", '<span class="orange">' + money(c.hold, false) + "</span>") +
+      "</div>";
   }
 
   function tradesScreen(v) {
@@ -573,6 +603,7 @@
       case "tab": ui.tab = val; ui.sheet = null; render(); app.querySelector("main").scrollTop = 0; break;
       case "acct": ui.account = val; render(); break;
       case "closed": ui.closed = !!val; render(); app.querySelector("main").scrollTop = 0; break;
+      case "period": settings.period = val === "month" ? "month" : "week"; saveState(); render(); break;
       case "cp": settings.cp = val === "C" || val === "P" ? val : ""; saveState(); render(); break;
       case "days": settings.days = parseInt(val, 10) || 0; ui.daysTyped = ""; saveState(); render(); break;
       case "prices": refreshPrices(); break;
