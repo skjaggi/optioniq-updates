@@ -335,7 +335,7 @@
     // The subtitle counts what the filters leave, e.g. "6 open puts expiring within 7 days".
     var n = list.length, kind = settings.cp === "C" ? "call" : settings.cp === "P" ? "put" : "trade";
     var what = "<b>" + n + "</b> " + (ui.closed ? "closed " : "open ") + kind + (n === 1 ? "" : "s");
-    var h = header("Trades", ui.closed ? what + " in the last 90 days, newest first"
+    var h = header("Options", ui.closed ? what + " in the last 90 days, newest first"
       : what + (d ? " expiring within " + d + " day" + (d > 1 ? "s" : "") : "") + ", soonest first");
     h += '<div class="tools"><input id="search" type="search" placeholder="Find a ticker" value="' + esc(ui.search) + '" autocapitalize="characters"></div>';
     // Compact filter rows: Open / Closed next to Both / Calls / Puts, then the days.
@@ -398,7 +398,7 @@
     h += '<div class="card"><label class="field">Warn when the stock is within this % of the strike<input id="nearPct" type="number" inputmode="decimal" min="0.5" max="20" step="0.5" value="' + esc(settings.nearPct) + '"></label></div>';
     h += '<div class="card"><div class="row"><b>Face ID to open</b><label class="switch"><input type="checkbox" data-act="lock"' + (settings.lock ? " checked" : "") + "></label></div>" +
          '<div class="muted small">Uses your phone\'s Face ID or passcode every time OptionIQ opens.</div></div>';
-    h += '<div class="card"><div class="muted small">Expiry reminders: OptionIQ adds each expiry to your phone\'s calendar with an alert 2 days before. On the Trades tab, tap <b>Add expiries to calendar</b>.</div></div>';
+    h += '<div class="card"><div class="muted small">Expiry reminders: OptionIQ adds each expiry to your phone\'s calendar with an alert 2 days before. On the Options tab, tap <b>Add expiries to calendar</b>.</div></div>';
     h += '<p class="muted small center">OptionIQ Phone ' + VERSION + (copy && copy.appVersion ? " · computer app " + esc(copy.appVersion) : "") +
          '<br><a href="terms.txt" target="_blank">Terms of Use</a></p>';
     return h;
@@ -579,10 +579,10 @@
     else body = ui.tab === "trades" ? tradesScreen(v) : ui.tab === "holdings" ? holdingsScreen(v) : ui.tab === "watch" ? watchScreen(v) : ui.tab === "more" ? moreScreen() : homeScreen(v);
     var problem = ui.problem === "signin" ? '<button class="notice" data-act="signin">Your OneDrive sign-in has ended. Tap to sign in again.</button>'
       : ui.problem ? '<div class="notice">' + esc(ui.problem) + "</div>" : "";
-    var tabs = [["home", "Home"], ["trades", "Trades"], ["holdings", "Stocks"], ["watch", "Watch"], ["more", "More"]];
+    var tabs = [["home", "Home"], ["trades", "Options"], ["holdings", "Stocks"], ["watch", "Watch"], ["more", "More"]];
     app.innerHTML = '<main>' + problem + (ui.busy ? '<div class="busy">' + esc(ui.busy) + "</div>" : "") + body +
       '<footer>© 2026 Quantum Nexus LLC. All rights reserved.</footer></main>' +
-      // + logs a trade on Home and Trades, adds a stock on Watch; not shown elsewhere.
+      // + logs a trade on Home and Options, adds a stock on Watch; not shown elsewhere.
       (v && (ui.tab === "home" || ui.tab === "trades") ? '<button class="fab" data-act="new" aria-label="New trade">+</button>' : "") +
       (v && ui.tab === "watch" ? '<button class="fab" data-act="watch-add" aria-label="Add to watchlist">+</button>' : "") +
       '<nav>' + tabs.map(function (t) { return '<button data-act="tab" data-v="' + t[0] + '" class="' + (ui.tab === t[0] ? "on" : "") + '">' + t[1] + "</button>"; }).join("") + "</nav>" +
