@@ -219,6 +219,7 @@
 
   function stockPrices() {
     var key = copy && copy.finnhubKey;
+    if (!key && copy && copy.sample) { ui.busy = ""; render(); return; }   // sample data has no key; option prices still came in
     if (!key) { ui.busy = ""; render(); alert("No Finnhub key yet. Enter it once in OptionIQ on your computer (🔑 Set Key); it reaches the phone on the next sync."); return; }
     var v = view(), set = {};
     v.trades.filter(Sums.isOpen).forEach(function (t) { set[t.ticker] = 1; });
