@@ -43,6 +43,22 @@
   }
   function kind(t) { return (t.cp === "C" ? "call" : "put") + (t.sb === "B" ? " (bought)" : ""); }
   function title(t) { return esc(t.ticker) + " $" + esc(t.strike) + " " + kind(t); }
+  // The option's price at the computer's last 🔄 Prices, and how much of the
+  // profit is already in hand: sold = premium kept, bought = gain on what was paid.
+  function optNow(t) {
+    var p = copy && copy.optionPrices && copy.optionPrices.prices;
+    var q = p && Sums.isOpen(t) ? p[String(t.id)] : null;
+    if (!q || !(Number(q.price) >= 0)) return null;
+    var prem = num(t.sellPremium), price = Number(q.price);
+    var pct = prem > 0 ? (t.sb === "B" ? price - prem : prem - price) / prem * 100 : null;
+    return { price: price, prem: prem, pct: pct, at: q.at };
+  }
+  function target() {
+    var v = Number(settings.target) || Number(copy && copy.optionPrices && copy.optionPrices.target) || 80;
+    return v > 0 ? v : 80;
+  }
+  function atTarget(t) { var o = optNow(t); return !!(o && o.pct !== null && o.pct >= target()); }
+  function pctText(p) { return (p > 0 && p < 1 ? "<1" : Math.round(p)) + "%"; }
 
   // ---- state ----------------------------------------------------------------
   var settings = load("oiq_settings", { store: "sample", nearPct: 3, lock: false, terms: "" });
@@ -261,8 +277,13 @@
       : "Closed " + shortDate(t.closeDate) + ", P&L " + money(t.netPL);
     var line3 = (open && m.pct !== null ? Math.abs(m.pct).toFixed(1) + "% " + (m.pct >= 0 ? "above" : "below") + " strike · " : "") +
                 esc(t.account) + ", " + esc(t.contracts) + " contract" + (String(t.contracts) === "1" ? "" : "s");
+    var o = open ? optNow(t) : null;
+    var line4 = o ? '<div class="optnow">' + (t.sb === "B" ? "Paid " : "Sold at ") + money(o.prem) + " · now " + money(o.price) +
+      (o.pct !== null ? ' · <span class="' + (o.pct >= 0 ? "up" : "down") + '">' + (o.pct >= 0 ? pctText(o.pct) + (t.sb === "B" ? " gain" : " captured") : pctText(-o.pct) + " loss") + "</span>" : "") +
+      (o.pct !== null && o.pct >= target() ? ' <span class="goal">🎯</span>' : "") + "</div>" : "";
     return '<button class="card trade ' + (open && risk(t) ? "risk" : "") + '" data-act="open-trade" data-id="' + esc(t.id) + '">' +
       '<div class="row"><b>' + title(t) + (t.expDate ? " · " + esc(shortDate(t.expDate)) : "") + "</b>" + tagHtml(t) + "</div>" +
+      line4 +
       '<div class="muted">' + line2 + "</div>" +
       '<div class="muted">' + line3 + "</div>" +
       (open && risk(t) ? '<div class="warn">Assignment risk</div>' : "") +
@@ -281,6 +302,9 @@
     var h = header("OptionIQ", copy.sample ? "Sample data, not your trades" : "Prices as of " + esc(timeOf(prices.at || copy.writtenAt)));
     h += accountChips(v);
     if (soon.length) h += '<button class="card banner" data-act="tab" data-v="trades"><b>' + soon.length + " trade" + (soon.length > 1 ? "s" : "") + " expire" + (soon.length > 1 ? "" : "s") + " within 2 days</b></button>";
+    var hit = open.filter(atTarget).length;
+    if (hit) h += '<button class="card banner goalbox" data-act="profit-list"><b>🎯 ' + hit + " option" + (hit > 1 ? "s" : "") + " at " + target() + "%+ profit</b>" +
+                  '<div class="muted small">Ready to close or roll? Tap to see ' + (hit > 1 ? "them" : "it") + ".</div></button>";
     var sum = copy.summary && (ui.account === "All" ? copy.summary.all : (copy.summary.accounts || {})[ui.account]);
     if (sum && sum.week && sum.month) h += summaryTiles(sum[settings.period]);
     else {  // a computer older than OptionIQ 1.7 doesn't send the cards
@@ -325,6 +349,7 @@
       // Open or Closed (90 days): one list at a time.
       if (Sums.isOpen(t) === ui.closed || (q && String(t.ticker).toUpperCase().indexOf(q) !== 0)) return false;
       if (settings.cp && t.cp !== settings.cp) return false;
+      if (!ui.closed && ui.profit && !atTarget(t)) return false;
       return ui.closed || !settings.days || daysUntil(t.expDate) <= settings.days;
     }).sort(function (a, b) {
       var ao = Sums.isOpen(a), bo = Sums.isOpen(b);
@@ -334,7 +359,7 @@
     var d = settings.days, custom = d && [7, 14, 30].indexOf(d) < 0;
     // The subtitle counts what the filters leave, e.g. "6 open puts expiring within 7 days".
     var n = list.length, kind = settings.cp === "C" ? "call" : settings.cp === "P" ? "put" : "trade";
-    var what = "<b>" + n + "</b> " + (ui.closed ? "closed " : "open ") + kind + (n === 1 ? "" : "s");
+    var what = "<b>" + n + "</b> " + (ui.closed ? "closed " : "open ") + kind + (n === 1 ? "" : "s") + (!ui.closed && ui.profit ? " at " + target() + "%+ profit" : "");
     var h = header("Options", ui.closed ? what + " in the last 90 days, newest first"
       : what + (d ? " expiring within " + d + " day" + (d > 1 ? "s" : "") : "") + ", soonest first");
     h += '<div class="tools"><input id="search" type="search" placeholder="Find a ticker" value="' + esc(ui.search) + '" autocapitalize="characters"></div>';
@@ -348,12 +373,20 @@
          [[0, "All"], [7, "7"], [14, "14"], [30, "30"]].map(function (o) {
            return '<button class="chip' + (d === o[0] ? " on" : "") + '" data-act="days" data-v="' + o[0] + '">' + o[1] + "</button>";
          }).join("") +
-         '<input id="days" class="chip' + (custom || ui.daysTyped ? " on" : "") + '" inputmode="numeric" placeholder="other" value="' + esc(ui.daysTyped || (custom ? d : "")) + '"><span class="muted small">days</span></div>';
+         '<input id="days" class="chip' + (custom || ui.daysTyped ? " on" : "") + '" inputmode="numeric" placeholder="other" value="' + esc(ui.daysTyped || (custom ? d : "")) + '"><span class="muted small">days</span></div>' +
+         '<div class="chips sm"><button class="chip' + (ui.profit ? " on" : "") + '" data-act="profit">🎯 ' + target() + "%+ profit</button></div>";
     h += accountChips(v, "sm");
     h += list.length ? list.map(function (t) { return tradeCard(t, v); }).join("") : '<p class="muted center">' + (ui.closed ? "No trades closed in the last 90 days." : "No trades to show.") + "</p>";
     var openOnes = list.filter(Sums.isOpen);
     if (openOnes.length) h += '<div class="actions"><button class="btn" data-act="cal-all">Add expiries to calendar</button></div>';
+    if (!ui.closed && copy.optionPrices && copy.optionPrices.at) h += '<p class="muted small center">Option prices from your computer\'s last 🔄 Prices, ' + esc(timeOf(newestPrice())) + ".</p>";
     return h;
+  }
+
+  function newestPrice() {
+    var p = copy.optionPrices.prices || {}, best = 0;
+    Object.keys(p).forEach(function (k) { if (p[k] && p[k].at > best) best = p[k].at; });
+    return best || copy.optionPrices.at;
   }
 
   function holdingsScreen(v) {
@@ -395,6 +428,8 @@
         : '<button class="btn primary" data-act="signin">Sign in to OneDrive</button>';
     }
     h += "</div>";
+    h += '<div class="card"><label class="field">🎯 Profit target: show options that have captured at least this %<input id="target" type="number" inputmode="numeric" min="1" max="500" step="5" value="' + esc(target()) + '"></label>' +
+         '<div class="muted small">For a sold option, the share of the premium you keep if you buy it back now. For a bought one, the gain on what you paid.</div></div>';
     h += '<div class="card"><label class="field">Warn when the stock is within this % of the strike<input id="nearPct" type="number" inputmode="decimal" min="0.5" max="20" step="0.5" value="' + esc(settings.nearPct) + '"></label></div>';
     h += '<div class="card"><div class="row"><b>Face ID to open</b><label class="switch"><input type="checkbox" data-act="lock"' + (settings.lock ? " checked" : "") + "></label></div>" +
          '<div class="muted small">Uses your phone\'s Face ID or passcode every time OptionIQ opens.</div></div>';
@@ -473,6 +508,8 @@
     var open = Sums.isOpen(t), m = moneyness(t), mark = view().marks[String(t.id)];
     var rows = [["Account", t.account], ["Opened", shortDate(t.date)], ["Expiry", shortDate(t.expDate) + (open ? " (" + daysUntil(t.expDate) + " days)" : "")],
                 ["Contracts", t.contracts], ["Premium", money(t.sellPremium) + " per share, " + money(t.total) + " total"]];
+    var o = optNow(t);
+    if (o) rows.push(["Option now", money(o.price) + (o.pct !== null ? ", " + (o.pct >= 0 ? pctText(o.pct) + (t.sb === "B" ? " gain" : " of the profit captured") : pctText(-o.pct) + " loss") : "") + (o.at ? " (" + timeOf(o.at) + ")" : "")]);
     if (open && m.px) rows.push(["Stock now", money(m.px) + ", " + Math.abs(m.pct).toFixed(1) + "% " + (m.pct >= 0 ? "above" : "below") + " strike"]);
     if (!open) rows.push(["Closed", esc(t.action) + " on " + shortDate(t.closeDate)], ["Net P&L", money(t.netPL)]);
     var buttons = open
@@ -604,6 +641,8 @@
       case "acct": ui.account = val; render(); break;
       case "closed": ui.closed = !!val; render(); app.querySelector("main").scrollTop = 0; break;
       case "period": settings.period = val === "month" ? "month" : "week"; saveState(); render(); break;
+      case "profit": ui.profit = !ui.profit; render(); break;
+      case "profit-list": ui.tab = "trades"; ui.closed = false; ui.profit = true; settings.days = 0; ui.daysTyped = ""; settings.cp = ""; ui.search = ""; saveState(); render(); break;
       case "cp": settings.cp = val === "C" || val === "P" ? val : ""; saveState(); render(); break;
       case "days": settings.days = parseInt(val, 10) || 0; ui.daysTyped = ""; saveState(); render(); break;
       case "prices": refreshPrices(); break;
@@ -657,6 +696,7 @@
       if (e.target.checked) turnLockOn();
       else { settings.lock = false; saveState(); render(); }
     }
+    if (e.target.id === "target") { var tg = num(e.target.value); if (tg && tg > 0) { settings.target = tg; saveState(); } }
     if (e.target.id === "nearPct") { var n = num(e.target.value); if (n && n > 0) { settings.nearPct = n; saveState(); } }
     if (e.target.id === "close-how") {
       document.getElementById("roll-part").hidden = e.target.value !== "roll";

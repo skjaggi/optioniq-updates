@@ -37,6 +37,15 @@
                  action: "Expired", closeDate: iso(-4), closePremium: "" };
     done.total = S.calcSells("S", "2.00", "1"); done.netPL = done.total; done.moneyOnHold = 0;
     trades.push(done);
+    var bought = { id: 7, account: "IRA", ticker: "NVDA", cp: "C", sb: "B", strike: "140", currentStock: "143.20",
+                   expDate: iso(16), sellPremium: "2.00", contracts: "1", date: iso(-6), company: "",
+                   action: "Open", closeDate: "", closePremium: "" };
+    bought.total = S.calcSells("B", "2.00", "1") + S.calcBuys("B", "2.00", "1"); bought.netPL = bought.total; bought.moneyOnHold = 0;
+    trades.push(bought);
+    // Made-up option prices, as the computer would send them after 🔄 Prices.
+    var at = Date.now() - 50 * 60000, px = function (p) { return { price: p, mid: true, at: at }; };
+    var optionPrices = { at: new Date(at).toISOString(), target: 80,
+                         prices: { 1: px(0.95), 2: px(0.15), 3: px(1.60), 4: px(0.30), 5: px(0.12), 7: px(3.10) } };
     // Made-up summary cards, as the computer would send them.
     var card = function (period, k) {
       var M = period === "month";
@@ -49,7 +58,7 @@
     var summary = { at: new Date(Date.now() - 50 * 60000).toISOString(), all: both(1),
                     accounts: { IRA: both(0.6), Roth: both(0.4) } };
     return {
-      version: 1, sample: true, summary: summary, writtenAt: new Date(Date.now() - 50 * 60000).toISOString(),
+      version: 1, sample: true, summary: summary, optionPrices: optionPrices, writtenAt: new Date(Date.now() - 50 * 60000).toISOString(),
       accounts: ["IRA", "Roth"], reminderDays: 7, finnhubKey: "", appliedOps: [],
       trades: trades,
       stocks: [{ id: 50, account: "Roth", ticker: "KO", company: "Coca-Cola", shares: "200", dateAcquired: iso(-60),
