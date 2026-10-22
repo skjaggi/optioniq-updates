@@ -1,8 +1,12 @@
 {
-  "version": "1.10",
+  "version": "1.10.1",
   "date": "2026-10-22",
-  "notes": "What's new in 1.10:\n• 🏦 Broker files can now add an account that isn't in OptionIQ yet (➕ New account in the account lists)\n• The Positions check can add open options that are missing from OptionIQ\n• Assigned shares are no longer counted twice after a Positions check\n• 🔄 Prices now runs by itself every 5 minutes (was 15) while OptionIQ is open in US market hours\n• Opening OptionIQ again (for example from the desktop icon) while it is already running brings up the open window instead of starting a second copy\n• Mac: OptionIQ closes itself a few seconds after you close its window, and the Terminal window closes on its own",
+  "notes": "What's new in 1.10.1:\n• Fixes \"Your change could not be saved\" after OptionIQ sat open and unused for a while\n• Mac: the desktop icon now starts OptionIQ (the first time, click Allow if the Mac asks about your Documents folder)",
   "history": [
+    {
+      "version": "1.10.1",
+      "notes": "What's new in 1.10.1:\n• Fixes \"Your change could not be saved\" after OptionIQ sat open and unused for a while\n• Mac: the desktop icon now starts OptionIQ (the first time, click Allow if the Mac asks about your Documents folder)"
+    },
     {
       "version": "1.10",
       "notes": "What's new in 1.10:\n• 🏦 Broker files can now add an account that isn't in OptionIQ yet (➕ New account in the account lists)\n• The Positions check can add open options that are missing from OptionIQ\n• Assigned shares are no longer counted twice after a Positions check\n• 🔄 Prices now runs by itself every 5 minutes (was 15) while OptionIQ is open in US market hours\n• Opening OptionIQ again (for example from the desktop icon) while it is already running brings up the open window instead of starting a second copy\n• Mac: OptionIQ closes itself a few seconds after you close its window, and the Terminal window closes on its own"
@@ -46,10 +50,10 @@
   ],
   "windows": {
     "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ-update.zip",
-    "sha256": "cd9e042eb770363eb354e2945bb0f258bf4ffe001932e468c3a4bebd6ff83117"
+    "sha256": "9f4b8fc947c34f3c96cc3b572c3049ccad2f90cd19eddf36eb5225a867f19f8e"
   },
   "mac": {
     "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ-for-Mac.zip",
-    "sha256": "aeac45ad5fd843983696eb6969f7c238b536ce30906559330ca0107b60845948"
+    "sha256": "5ae3800f07ac3a47f9bd1f02d04753ecba81bff5c9afbd34f25ee46842492961"
   }
 }
