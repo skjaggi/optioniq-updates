@@ -1,8 +1,12 @@
 {
-  "version": "1.10.1",
-  "date": "2026-10-22",
-  "notes": "What's new in 1.10.1:\n• Fixes \"Your change could not be saved\" after OptionIQ sat open and unused for a while\n• Mac: the desktop icon now starts OptionIQ (the first time, click Allow if the Mac asks about your Documents folder)",
+  "version": "1.11",
+  "date": "2026-10-23",
+  "notes": "What's new in 1.11:\n• A tidier top bar: the buttons are grouped into drop-down menus (My Results, Find Trades, Stock Research, Data & Files, Settings). Import and Broker files are one button, and the new-high message is part of 🔄 Prices\n• Stocks are shown one line per stock per account, with each purchase (lot) listed underneath: date, short or long term, cost and gain\n• When you sell shares, choose which lots go: FIFO (oldest first), LIFO (newest first), Highest cost, or Pick lots by hand. Set your usual choice in ⚙ Settings → Selling shares\n• 🏦 Broker files can bring in just your stocks (📈 Stocks only) and split them into dated lots from your Activity history\n• No more Edge sign-in or extension pop-ups when OptionIQ opens\n• Fixes \"Update now\" failing with \"No such file or directory\" on some new installs",
   "history": [
+    {
+      "version": "1.11",
+      "notes": "What's new in 1.11:\n• A tidier top bar: the buttons are grouped into drop-down menus (My Results, Find Trades, Stock Research, Data & Files, Settings). Import and Broker files are one button, and the new-high message is part of 🔄 Prices\n• Stocks are shown one line per stock per account, with each purchase (lot) listed underneath: date, short or long term, cost and gain\n• When you sell shares, choose which lots go: FIFO (oldest first), LIFO (newest first), Highest cost, or Pick lots by hand. Set your usual choice in ⚙ Settings → Selling shares\n• 🏦 Broker files can bring in just your stocks (📈 Stocks only) and split them into dated lots from your Activity history\n• No more Edge sign-in or extension pop-ups when OptionIQ opens\n• Fixes \"Update now\" failing with \"No such file or directory\" on some new installs"
+    },
     {
       "version": "1.10.1",
       "notes": "What's new in 1.10.1:\n• Fixes \"Your change could not be saved\" after OptionIQ sat open and unused for a while\n• Mac: the desktop icon now starts OptionIQ (the first time, click Allow if the Mac asks about your Documents folder)"
@@ -50,10 +54,10 @@
   ],
   "windows": {
     "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ-update.zip",
-    "sha256": "9f4b8fc947c34f3c96cc3b572c3049ccad2f90cd19eddf36eb5225a867f19f8e"
+    "sha256": "109e1aa568dc5eebaa116ab369b26e1798d04830483377774b395753e61b1214"
   },
   "mac": {
     "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ-for-Mac.zip",
-    "sha256": "5ae3800f07ac3a47f9bd1f02d04753ecba81bff5c9afbd34f25ee46842492961"
+    "sha256": "668e4393e248700b8c162fa7abfc6b4f5c85ce4de11a6c9a27eeb1d9920e8589"
   }
 }
