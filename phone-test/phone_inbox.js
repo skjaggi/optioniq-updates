@@ -79,10 +79,17 @@
   function shareEffect(t, action, when, stocks, h, idBase, notes) {
     var qty = (parseInt(t.contracts, 10) || 1) * 100;
     if (action === "Assigned" && t.cp === "P") {
+      // Cost per share: the strike, or (h.assignedNet, the person's choice in
+      // setup) the strike less the put money received, the way brokers show it.
+      var cost = t.strike;
+      if (h.assignedNet && h.calcSells) {
+        var net = (num(t.strike) || 0) - (h.calcSells(t.sb || "S", t.sellPremium, t.contracts) || 0) / qty;
+        cost = String(Math.round(net * 100) / 100);
+      }
       stocks = stocks.concat([{
         id: idBase + 1, account: t.account, ticker: t.ticker,
         company: t.company || (h.tickerName ? h.tickerName(t.ticker) : "") || "",
-        shares: String(qty), dateAcquired: when, costBasis: t.strike,
+        shares: String(qty), dateAcquired: when, costBasis: cost,
         currentPrice: t.currentStock || t.strike, status: "Assigned", soldDate: "", soldPrice: ""
       }]);
       notes.push("Added " + qty + " " + t.ticker + " shares to " + t.account + " (put assigned).");
@@ -124,7 +131,7 @@
     (alreadyApplied || []).forEach(function (id) { done[id] = true; });
     var res = { trades: trades.slice(), stocks: stocks.slice(), watchlist: Object.assign({}, h.watchlist || {}),
                 applied: [], files: [], history: [], notes: [], lines: [],
-                counts: { added: 0, closed: 0, fixed: 0, deleted: 0, watched: 0, skipped: 0 } };
+                counts: { added: 0, closed: 0, fixed: 0, deleted: 0, watched: 0, split: 0, skipped: 0 } };
 
     ops.forEach(function (op, n) {
       if (op.file) res.files.push(op.file);           // read: never try this file again
@@ -170,6 +177,24 @@
       var i = find(op.id);
       if (i < 0) return skip("the trade it changes is no longer in your records.");
       var cur = res.trades[i];
+
+      // ✂ Split: op.qty contracts move into a new trade (op.newId), same premium
+      // a share; each part's money is worked out again for its own contracts.
+      if (op.op === "split") {
+        var n = parseInt(cur.contracts, 10) || 0, k = parseInt(op.qty, 10) || 0;
+        if (!isOpen(cur)) return skip(label(cur) + " was already closed on the computer, so it can't be split.");
+        if (!(k >= 1 && k < n)) return skip(label(cur) + ": can't split " + k + " of " + n + " contracts.");
+        var newId = op.newId !== undefined ? op.newId : idBase + 5;
+        if (find(newId) >= 0) return;                                  // already here
+        var keep = priced(Object.assign({}, cur, { contracts: String(n - k) }), h);
+        var part = priced(Object.assign({}, cur, { id: newId, contracts: String(k), splitFromId: cur.id }), h);
+        res.history.push({ opId: op.opId, at: at, before: cur, after: keep });
+        res.trades[i] = keep;
+        res.trades.push(part);
+        res.counts.split++;
+        res.lines.push("✂ Split " + label(cur) + " (" + n + " contracts) into " + (n - k) + " + " + k);
+        return;
+      }
 
       if (op.op === "close") {
         var action = str(op.action);
@@ -251,11 +276,13 @@
     if (c.added) parts.push(c.added + " new trade" + (c.added > 1 ? "s" : ""));
     if (c.closed) parts.push(c.closed + " close" + (c.closed > 1 ? "s" : ""));
     if (c.fixed) parts.push(c.fixed + " fix" + (c.fixed > 1 ? "es" : ""));
+    if (c.split) parts.push(c.split + " split" + (c.split > 1 ? "s" : ""));
     if (c.deleted) parts.push(c.deleted + " delete" + (c.deleted > 1 ? "s" : ""));
     if (c.watched) parts.push(c.watched + " watchlist ticker" + (c.watched > 1 ? "s" : ""));
     return parts.length ? "📱 Added from your phone: " + parts.join(", ") + "." : "";
   }
 
-  root.OptionIQPhone = { applyPhoneOps: applyPhoneOps, summary: summary };
+  // shareEffect is also used by broker_import.js (assignments in a broker file).
+  root.OptionIQPhone = { applyPhoneOps: applyPhoneOps, summary: summary, shareEffect: shareEffect };
   if (typeof module !== "undefined") module.exports = root.OptionIQPhone;
 })(typeof window !== "undefined" ? window : globalThis);

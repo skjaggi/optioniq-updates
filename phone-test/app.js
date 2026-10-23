@@ -47,8 +47,9 @@
   // profit is already in hand: sold = premium kept, bought = gain on what was paid.
   function optNow(t) {
     var p = copy && copy.optionPrices && copy.optionPrices.prices;
-    var q = p && Sums.isOpen(t) ? p[String(t.id)] : null;
-    var live = prices.opt && Sums.isOpen(t) ? prices.opt[String(t.id)] : null;
+    // A split-off part has the same option as the trade it came from.
+    var pick = function (m) { return m && Sums.isOpen(t) ? m[String(t.id)] || (t.splitFromId !== undefined ? m[String(t.splitFromId)] : null) : null; };
+    var q = pick(p), live = pick(prices.opt);
     if (live && (!q || !q.at || live.at > q.at)) q = live;   // the newest price wins
     if (!q || !(Number(q.price) >= 0)) return null;
     var prem = num(t.sellPremium), price = Number(q.price);
@@ -100,6 +101,7 @@
       var id = op.op === "new" ? op.trade.id : op.id;
       marks[String(id)] = op.uploaded ? "waiting" : "not sent";
       if (op.roll) marks[String(op.roll.id)] = marks[String(id)];
+      if (op.newId !== undefined) marks[String(op.newId)] = marks[String(id)];
     });
     return { trades: r.trades, stocks: r.stocks.filter(function (s) { return (s.status || "Held") !== "Sold"; }),
              watchlist: Object.keys(r.watchlist).sort().map(function (k) { return { ticker: k, name: r.watchlist[k] }; }),
@@ -619,7 +621,8 @@
     var buttons = open
       ? '<button class="btn primary" data-act="close-form" data-id="' + esc(t.id) + '">Close or roll</button>' +
         '<button class="btn" data-act="quick" data-how="Expired" data-id="' + esc(t.id) + '">Expired</button>' +
-        (t.sb === "S" ? '<button class="btn" data-act="quick" data-how="' + (t.cp === "P" ? "Assigned" : "Called Away") + '" data-id="' + esc(t.id) + '">' + (t.cp === "P" ? "Assigned" : "Called away") + "</button>" : "")
+        (t.sb === "S" ? '<button class="btn" data-act="quick" data-how="' + (t.cp === "P" ? "Assigned" : "Called Away") + '" data-id="' + esc(t.id) + '">' + (t.cp === "P" ? "Assigned" : "Called away") + "</button>" : "") +
+        ((parseInt(t.contracts, 10) || 0) >= 2 ? '<button class="btn" data-act="split" data-id="' + esc(t.id) + '">✂ Split</button>' : "")
       : "";
     return sheet("<h2>" + title(t) + " " + tagHtml(t) + "</h2>" +
       (mark ? '<p class="pend">' + (mark === "waiting" ? "⏳ Waiting for computer" : "📤 Not sent yet") + "</p>" : "") +
@@ -766,6 +769,17 @@
             : "Mark as called away? " + ((parseInt(t.contracts, 10) || 1) * 100) + " " + t.ticker + " shares in " + t.account + " will be sold at $" + t.strike + ".")) {
           change({ op: "close", id: t.id, action: el.getAttribute("data-how"), closeDate: today() });
         }
+        break;
+      case "split":
+        // ✂ Split: move some contracts into a new trade, so each part can be
+        // rolled, closed or assigned on its own (the computer does the same).
+        if (!t) break;
+        var n = parseInt(t.contracts, 10) || 0;
+        var k = prompt("Split " + t.ticker + " $" + t.strike + " (" + n + " contracts) into two trades.\n\nHow many contracts go into the new trade? (1 to " + (n - 1) + ")", n === 2 ? "1" : "");
+        if (k === null) break;
+        k = parseInt(k, 10);
+        if (!(k >= 1 && k < n)) { alert("Please enter a number from 1 to " + (n - 1) + "."); break; }
+        change({ op: "split", id: t.id, qty: k, newId: Date.now() });
         break;
       case "delete": if (t && confirm("Delete " + t.ticker + " $" + t.strike + "? This can't be undone on the phone.")) change({ op: "delete", id: t.id }); break;
       case "cal-one": if (t) addToCalendar([t]); break;
