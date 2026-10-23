@@ -113,21 +113,29 @@
     setFolder: function (id, path) { localStorage.setItem("oiq_od_folder", id); localStorage.setItem("oiq_od_path", path); },
     folderPath: function () { return localStorage.getItem("oiq_od_path") || ""; },
 
-    signIn: function () {
-      var verifier = randomText(48), state = randomText(16);
+    // silent: no screens at all if Microsoft still remembers this phone
+    // (prompt=none); otherwise Microsoft sends back error=login_required.
+    signIn: function (silent) {
+      var again = !!this.folder(), verifier = randomText(48), state = randomText(16);
       sessionStorage.setItem("oiq_pkce", verifier);
       sessionStorage.setItem("oiq_state", state);
       return crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier)).then(function (h) {
-        location.href = MS.authority + "/authorize?" + new URLSearchParams({
-          client_id: MS.clientId, response_type: "code", redirect_uri: redirectUri(), scope: MS.scope,
-          code_challenge: b64url(h), code_challenge_method: "S256", state: state, prompt: "select_account"
-        });
+        var q = { client_id: MS.clientId, response_type: "code", redirect_uri: redirectUri(), scope: MS.scope,
+                  code_challenge: b64url(h), code_challenge_method: "S256", state: state };
+        // First time: let the person pick the account. Signing in again: Microsoft
+        // reuses the account it remembers, usually with nothing to tap.
+        if (silent) q.prompt = "none"; else if (!again) q.prompt = "select_account";
+        location.href = MS.authority + "/authorize?" + new URLSearchParams(q);
       });
     },
 
     // Back from Microsoft's sign-in page with ?code=...
     finishSignIn: function () {
       var q = new URLSearchParams(location.search);
+      if (q.get("error")) {                       // a silent try that needs the person
+        history.replaceState(null, "", location.pathname);
+        return Promise.reject(new Error("signin"));
+      }
       if (!q.get("code")) return Promise.resolve(false);
       history.replaceState(null, "", location.pathname);
       if (q.get("state") !== sessionStorage.getItem("oiq_state")) return Promise.reject(new Error("Sign-in didn't match. Please try again."));

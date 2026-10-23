@@ -141,10 +141,31 @@
     sync();
   }
 
+  // Signed out after being set up? Try once (at most every 10 minutes) to sign
+  // in again with no screens; else ask. True when the page is going to Microsoft.
+  function needSignIn() {
+    var od = Stores.onedrive;
+    if (settings.store !== "onedrive" || !od.ready() || !od.folder() || od.signedIn()) return false;
+    var last = Number(sessionStorage.getItem("oiq_silent") || 0);
+    if (Date.now() - last > 10 * 60000) { sessionStorage.setItem("oiq_silent", String(Date.now())); od.signIn(true); return true; }
+    if (!ui.askedSignIn) { ui.askedSignIn = true; askSignIn(); }
+    return false;
+  }
+  // The pop-up asking to sign in to OneDrive again.
+  function askSignIn() {
+    var n = pending.filter(function (op) { return !op.uploaded; }).length;
+    ui.problem = "signin";
+    ui.sheet = sheet("<h2>Sign in to OneDrive again</h2>" +
+      '<p>OneDrive has signed you out, so the phone can\'t get your latest trades' + (n ? " or send your " + n + " change" + (n > 1 ? "s" : "") + " to your computer" : "") + ".</p>" +
+      '<p class="muted small">Microsoft asks for this about once a day. Your changes are kept on the phone until then.</p>' +
+      '<div class="actions"><button class="btn" data-act="close-sheet">Later</button><button class="btn primary" data-act="signin">Sign in</button></div>');
+  }
+
   var syncing = false;
   function sync() {
     if (syncing) return Promise.resolve();
     var st = store();
+    if (st.id !== "sample" && st.folder() && !st.signedIn()) { ui.problem = "signin"; render(); return Promise.resolve(); }
     if (st.id !== "sample" && (!st.signedIn() || !st.folder())) { render(); return Promise.resolve(); }
     syncing = true; ui.busy = "Syncing…"; render();
     var unsent = pending.filter(function (op) { return !op.uploaded; });
@@ -164,6 +185,7 @@
       saveState();
       ui.problem = "";
     }).catch(function (e) {
+      if (e && e.message === "signin" && !ui.sheet && !ui.askedSignIn) { ui.askedSignIn = true; askSignIn(); }
       ui.problem = e && e.message === "signin" ? "signin"
         : navigator.onLine === false ? "You're offline. Changes will be sent when you're back online."
         : "Couldn't reach " + st.name + ". Showing what was saved last. (" + (e && e.message || e) + ")";
@@ -304,7 +326,7 @@
   document.addEventListener("visibilitychange", function () {
     if (document.hidden) { hiddenAt = Date.now(); return; }
     if (settings.lock && hiddenAt && Date.now() - hiddenAt > 60000) { ui.locked = true; render(); }
-    else if (!ui.locked) sync();
+    else if (!ui.locked && !needSignIn()) sync();
   });
 
   // ---- screens ----------------------------------------------------------------
@@ -732,7 +754,9 @@
     else if (!v) body = header("OptionIQ", "") + '<p class="muted center">' + (ui.busy || "Choose where your OptionIQ data is to get started.") + "</p>" +
       (ui.busy ? "" : '<div class="actions"><button class="btn primary" data-act="tab" data-v="more">Choose my data</button></div>');
     else body = ui.tab === "trades" ? tradesScreen(v) : ui.tab === "holdings" ? holdingsScreen(v) : ui.tab === "watch" ? watchScreen(v) : ui.tab === "more" ? moreScreen() : homeScreen(v);
-    var problem = ui.problem === "signin" ? '<button class="notice" data-act="signin">Your OneDrive sign-in has ended. Tap to sign in again.</button>'
+    var unsentN = pending.filter(function (op) { return !op.uploaded; }).length;
+    var problem = ui.problem === "signin" ? '<button class="notice" data-act="signin">⚠️ OneDrive has signed you out' +
+        (unsentN ? ", so " + unsentN + " change" + (unsentN > 1 ? "s" : "") + " can't be sent to your computer" : "") + ". Tap here to sign in again.</button>"
       : ui.problem ? '<div class="notice">' + esc(ui.problem) + "</div>" : "";
     var tabs = [["home", "Home"], ["trades", "Options"], ["holdings", "Stocks"], ["watch", "Watch"], ["more", "More"]];
     app.innerHTML = '<main>' + problem + (ui.busy ? '<div class="busy">' + esc(ui.busy) + "</div>" : "") + body +
@@ -913,9 +937,16 @@
       copy = load("oiq_copy_onedrive", null); pending = load("oiq_pending_onedrive", []);
       if (!Stores.onedrive.folder()) { render(); trail = []; browse(); return; }
     }
+    // Microsoft ends a phone web app's sign-in after about a day. When that has
+    // happened, try once to sign in again without any screens; if Microsoft needs
+    // the person, show the sign-in box instead.
+    if (needSignIn()) return;
     render();
     if (!ui.locked) sync();
     if (ui.locked) unlock();
-  }).catch(function (e) { ui.problem = e.message; render(); });
+  }).catch(function (e) {
+    if (e.message === "signin") askSignIn(); else ui.problem = e.message;
+    render();
+  });
   setInterval(function () { if (!document.hidden && !ui.locked) sync(); }, 5 * 60000);
 })();
