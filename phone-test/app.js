@@ -596,7 +596,8 @@
     var closed = isEdit && !Sums.isOpen(t);
     return sheet('<h2>' + (isEdit ? "Fix " + title(t) : "New trade") + "</h2>" +
       '<form id="trade-form" data-id="' + esc(isEdit ? t.id : "") + '">' +
-      '<label class="field">Account<select name="account">' + options(copy.accounts || [], t.account) + "</select></label>" +
+      // No account picked for you on "All": choosing one is part of logging a trade.
+      '<label class="field">Account<select name="account">' + (t.account ? "" : '<option value="" selected>Choose the account…</option>') + options(copy.accounts || [], t.account) + "</select></label>" +
       '<label class="field">Stock<input name="ticker" list="tickers" autocapitalize="characters" autocomplete="off" value="' + esc(t.ticker) + '" placeholder="e.g. AAPL"></label>' +
       '<datalist id="tickers">' + Object.keys(tickers).sort().map(function (k) { return '<option value="' + esc(k) + '">'; }).join("") + "</datalist>" +
       '<label class="field">Type<select name="type">' + options([["PS", "Put, sold"], ["CS", "Call, sold"], ["PB", "Put, bought"], ["CB", "Call, bought"]], (t.cp || "P") + (t.sb || "S")) + "</select></label>" +
@@ -625,6 +626,7 @@
         t.closePremium = price === null ? "" : closeAmount(t, price);
     }
     var problems = [];
+    if (!t.account) problems.push("the account");
     if (!t.ticker) problems.push("the stock");
     if (num(t.strike) === null) problems.push("the strike");
     if (!t.expDate) problems.push("the expiry date");
@@ -792,7 +794,7 @@
       case "cp": settings.cp = val === "C" || val === "P" ? val : ""; saveState(); render(); break;
       case "days": settings.days = parseInt(val, 10) || 0; ui.daysTyped = ""; saveState(); render(); break;
       case "prices": refreshPrices(); break;
-      case "new": ui.sheet = tradeForm({ account: ui.account !== "All" ? ui.account : (copy.accounts || [])[0] }, false); render(); break;
+      case "new": ui.sheet = tradeForm({ account: ui.account !== "All" ? ui.account : (copy.accounts || []).length === 1 ? copy.accounts[0] : "" }, false); render(); break;
       case "watch-add": ui.sheet = watchForm(); render(); break;
       case "open-trade": if (t) { ui.sheet = tradeSheet(t); render(); } break;
       case "edit": if (t) { ui.sheet = tradeForm(t, true); render(); } break;
