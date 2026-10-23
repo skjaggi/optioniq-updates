@@ -131,8 +131,10 @@
 
   // ---- changes made on the phone ------------------------------------------
   function change(op) {
-    op.v = 1; op.opId = uid(); op.at = nowLocal(); op.device = "phone"; op.uploaded = false;
-    pending.push(op);
+    [].concat(op).forEach(function (o) {
+      o.v = 1; o.opId = uid(); o.at = nowLocal(); o.device = "phone"; o.uploaded = false;
+      pending.push(o);
+    });
     saveState();
     ui.sheet = null;
     render();
@@ -640,6 +642,7 @@
     return sheet("<h2>Close " + title(t) + "</h2>" +
       '<form id="close-form" data-id="' + esc(t.id) + '">' +
       '<label class="field">How<select name="how" id="close-how">' + options([["back", back], ["roll", "Rolled (close and open a new one)"]], "back") + "</select></label>" +
+      ((parseInt(t.contracts, 10) || 0) >= 2 ? '<label class="field">Contracts to close (of ' + esc(t.contracts) + ')<input name="cQty" inputmode="numeric" value="' + esc(t.contracts) + '"></label><p class="muted small" id="close-rest"></p>' : "") +
       '<div class="two"><label class="field">Date<input name="closeDate" type="date" value="' + today() + '"></label>' +
       '<label class="field">' + (t.sb === "S" ? "Price per share paid" : "Price per share received") + '<input name="price" inputmode="decimal" placeholder="e.g. 0.30"></label></div>' +
       '<div id="roll-part" hidden><h3>New trade</h3><div class="two"><label class="field">New strike $<input name="rStrike" inputmode="decimal" value="' + esc(t.strike) + '"></label>' +
@@ -654,6 +657,14 @@
   // way the computer's Close box does it (closeTotal there): $0.67 a contract,
   // negative when a sold option is bought back, positive when a bought one is
   // sold. No minus sign is typed (the iPhone keypad has none).
+  // "Contracts to close": the part of t being closed, priced for its own contracts.
+  function closePart(t, f) {
+    var n = parseInt(t.contracts, 10) || 0, el = f && f.elements.cQty, k = el ? parseInt(el.value, 10) : n;
+    if (!(k >= 1 && k <= n)) return null;
+    if (k === n) return t;
+    var sells = Sums.calcSells(t.sb, t.sellPremium, k), buys = Sums.calcBuys(t.sb, t.sellPremium, k);
+    return Object.assign({}, t, { contracts: String(k), sells: sells, buys: buys, total: sells + buys, rest: n - k });
+  }
   function closeAmount(t, price) {
     var q = parseInt(t.contracts, 10) || 1, gross = Math.abs(price) * q * 100, fee = 0.67 * q;
     return (t.sb === "B" ? gross - fee : -(gross + fee)).toFixed(2);
@@ -836,8 +847,15 @@
       ui.search = e.target.value; render();
       var s = document.getElementById("search"); s.focus(); s.setSelectionRange(s.value.length, s.value.length);
     }
-    if (e.target.form && e.target.form.id === "close-form" && e.target.name === "price") {
-      var t = findTrade(e.target.form.getAttribute("data-id")), p = num(e.target.value);
+    if (e.target.form && e.target.form.id === "close-form" && e.target.name === "cQty") {
+      var whole = findTrade(e.target.form.getAttribute("data-id")), cp = closePart(whole, e.target.form), rq = e.target.form.elements.rQty;
+      document.getElementById("close-rest").textContent = cp && cp.rest ? "✂ The other " + cp.rest + " stay open as their own trade." : "";
+      if (cp && rq && rq.getAttribute("data-k") !== "typed") rq.value = cp.contracts;
+    }
+    if (e.target.form && e.target.form.id === "close-form" && e.target.name === "rQty") e.target.setAttribute("data-k", "typed");
+    if (e.target.form && e.target.form.id === "close-form" && (e.target.name === "price" || e.target.name === "cQty")) {
+      var t = closePart(findTrade(e.target.form.getAttribute("data-id")), e.target.form), p = num(e.target.form.elements.price.value);
+      if (!t) return;
       document.getElementById("close-total").textContent = p === null ? "" : "Saved as " + money(Number(closeAmount(t, p))) +
         " (includes $0.67 a contract). Net P/L on this trade: " + money(Sums.calcNetPL(t.total, closeAmount(t, p), t.sb === "S" ? "Bought to Close" : "Sold to Close")) + ".";
     }
@@ -870,7 +888,8 @@
       change({ op: "watch", ticker: tk, name: f.elements.name.value.trim() });
     }
     if (f.id === "close-form") {
-      var t = findTrade(f.getAttribute("data-id")), g = function (n) { return f.elements[n].value.trim(); };
+      var whole = findTrade(f.getAttribute("data-id")), t = closePart(whole, f), g = function (n) { return f.elements[n].value.trim(); };
+      if (!t) { err.textContent = "Contracts to close must be from 1 to " + whole.contracts + "."; return; }
       var price = num(g("price")), how = g("how"), when = g("closeDate") || today();
       if (price === null) { err.textContent = "Please enter the price per share."; return; }
       var op = { op: "close", id: t.id, action: how === "roll" ? "Rolled" : t.sb === "S" ? "Bought to Close" : "Sold to Close",
@@ -881,7 +900,8 @@
         if (re <= when) { err.textContent = "The new expiry must be after the close date."; return; }
         op.roll = { id: Date.now() + Math.random(), strike: String(rs), expDate: re, premium: String(rp), contracts: String(rq) };
       }
-      change(op);
+      // Closing only some contracts: first split the rest off as their own open trade.
+      change(t.rest ? [{ op: "split", id: t.id, qty: t.rest, newId: Date.now() + 1 }, op] : op);
     }
   });
 
