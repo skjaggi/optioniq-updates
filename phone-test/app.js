@@ -414,14 +414,14 @@
   // left of their premium. Same money rule as Close: buy back = price + 67c a
   // contract, sell = price - 67c. Trades with no price yet are left out.
   function closeNow(open) {
-    var r = { cost: 0, prem: 0, priced: 0, n: open.length };
+    var r = { cost: 0, prem: 0, priced: 0, n: open.length, skip: [], skipPrem: 0 };
     open.forEach(function (t) {
       var o = optNow(t), q = parseInt(t.contracts, 10) || 0, total = num(t.total);
-      if (!o || !q || total === null) return;
+      if (!o || !q || total === null) { r.skip.push(t); r.skipPrem += total || 0; return; }
       r.priced++; r.prem += total; r.cost -= Number(closeAmount(t, o.price));
     });
     r.ifClosed = r.prem - r.cost;
-    r.kept = r.prem > 0 ? r.ifClosed / r.prem * 100 : null;
+    r.kept = r.prem > 0 && r.ifClosed >= 0 ? r.ifClosed / r.prem * 100 : null;
     return r;
   }
 
@@ -444,7 +444,8 @@
         var o = closeNow(open || []), sub = "";
         if (o.n && !o.priced) sub = "Cost to close now: not priced yet";
         else if (o.priced) sub = "Cost to close now: <b>" + money(o.cost) + "</b><br>If closed now: " + pl(o.ifClosed) +
-          (o.kept !== null ? " (" + Math.round(o.kept) + "% kept)" : "") + (o.priced < o.n ? "<br>" + o.priced + " of " + o.n + " priced" : "");
+          (o.kept !== null ? " (" + Math.round(o.kept) + "% kept)" : "") + (o.priced < o.n ? "<br>Not priced yet, left out: " + o.skip.map(function (t) { return esc(t.ticker) + " $" + esc(t.strike) + " " + (t.cp === "C" ? "call" : "put"); })
+            .filter(function (x, i, a) { return a.indexOf(x) === i; }).join(", ") + " (" + money(o.skipPrem) + " of the premium)" : "");
         return tile("Premium collected for open positions", '<span class="' + (c.open < 0 ? "neg" : "pos") + '">' + money(c.open) + "</span>", sub);
       })() +
       tile("Open positions", '<span class="amber">' + c.openCount + "</span>") +
