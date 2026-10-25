@@ -395,7 +395,7 @@
     if (hit) h += '<button class="card banner goalbox" data-act="profit-list"><b>🎯 ' + hit + " option" + (hit > 1 ? "s" : "") + " at " + target() + "%+ profit</b>" +
                   '<div class="muted small">Ready to close or roll? Tap to see ' + (hit > 1 ? "them" : "it") + ".</div></button>";
     var sum = copy.summary && (ui.account === "All" ? copy.summary.all : (copy.summary.accounts || {})[ui.account]);
-    if (sum && sum.week && sum.month) h += summaryTiles(sum[settings.period]);
+    if (sum && sum.week && sum.month) h += summaryTiles(sum[settings.period], open);
     else {  // a computer older than OptionIQ 1.7 doesn't send the cards
       h += '<div class="card"><div class="muted">Premium this month</div><div class="big">' + money(prem) + "</div></div>";
       h += '<div class="card"><div class="muted">Open trades</div><div class="big">' + open.length + (ui.account === "All" && accts > 1 ? " in " + accts + " accounts" : "") + "</div></div>";
@@ -410,7 +410,22 @@
 
   // The same eight cards as on top of the computer's Options tab, worked out
   // by the computer (the phone doesn't have every closed trade).
-  function summaryTiles(c) {
+  // Cost to close the open trades at the newest option prices, and what would be
+  // left of their premium. Same money rule as Close: buy back = price + 67c a
+  // contract, sell = price - 67c. Trades with no price yet are left out.
+  function closeNow(open) {
+    var r = { cost: 0, prem: 0, priced: 0, n: open.length };
+    open.forEach(function (t) {
+      var o = optNow(t), q = parseInt(t.contracts, 10) || 0, total = num(t.total);
+      if (!o || !q || total === null) return;
+      r.priced++; r.prem += total; r.cost -= Number(closeAmount(t, o.price));
+    });
+    r.ifClosed = r.prem - r.cost;
+    r.kept = r.prem > 0 ? r.ifClosed / r.prem * 100 : null;
+    return r;
+  }
+
+  function summaryTiles(c, open) {
     var M = c.period === "month", P = M ? "This month's" : "This week's";
     var pl = function (v) { return '<span class="' + (v < 0 ? "neg" : "pos") + '">' + money(v) + "</span>"; };
     var tile = function (label, val, sub) {
@@ -425,7 +440,13 @@
       tile(P + " premium", pl(c.prem.total), "Puts " + money(c.prem.puts) + " · Calls " + money(c.prem.calls)) +
       tile(M ? "Avg monthly net P&L (closed)" : "Avg weekly net P&L (closed)", pl(c.avg),
            c.since ? "since " + esc(shortDate(c.since)) + " · " + Number(c.units).toFixed(1) + (M ? " mo" : " wk") : "") +
-      tile("Open positions net P&L", pl(c.open)) +
+      (function () {
+        var o = closeNow(open || []), sub = "";
+        if (o.n && !o.priced) sub = "Cost to close now: not priced yet";
+        else if (o.priced) sub = "Cost to close now: <b>" + money(o.cost) + "</b><br>If closed now: " + pl(o.ifClosed) +
+          (o.kept !== null ? " (" + Math.round(o.kept) + "% kept)" : "") + (o.priced < o.n ? "<br>" + o.priced + " of " + o.n + " priced" : "");
+        return tile("Premium collected for open positions", '<span class="' + (c.open < 0 ? "neg" : "pos") + '">' + money(c.open) + "</span>", sub);
+      })() +
       tile("Open positions", '<span class="amber">' + c.openCount + "</span>") +
       tile("Closed trades", '<span class="blue">' + c.closedCount + "</span>") +
       tile("Money held for puts", '<span class="orange">' + money(c.hold, false) + "</span>") +
