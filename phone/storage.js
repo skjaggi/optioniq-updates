@@ -47,16 +47,20 @@
     var optionPrices = { at: new Date(at).toISOString(), target: 80,
                          prices: { 1: px(0.95), 2: px(0.15), 3: px(1.60), 4: px(0.30), 5: px(0.12), 7: px(3.10) } };
     // Made-up summary cards, as the computer would send them.
-    var card = function (period, k) {
+    // The open card is the real premium of the open sample trades, so the phone's
+    // "If closed now" line adds up against it.
+    var openSum = function (a) { return trades.filter(function (t) { return t.action === "Open" && (!a || t.account === a); })
+                                              .reduce(function (x, t) { return x + t.total; }, 0); };
+    var card = function (period, k, a) {
       var M = period === "month";
       return { period: period, total: 2486.4 * k, periodPL: (M ? 734.2 : 198.66) * k,
                prem: { puts: (M ? 1630.1 : 466.1) * k, calls: (M ? 412.5 : 207.3) * k, total: (M ? 2042.6 : 673.4) * k },
-               avg: (M ? 612.4 : 141.3) * k, units: M ? 4.1 : 17.6, since: iso(-123), open: 1265.3 * k,
+               avg: (M ? 612.4 : 141.3) * k, units: M ? 4.1 : 17.6, since: iso(-123), open: openSum(a),
                openCount: Math.round(5 * k), closedCount: Math.round(31 * k), hold: Math.round(69600 * k) };
     };
-    var both = function (k) { return { week: card("week", k), month: card("month", k) }; };
+    var both = function (k, a) { return { week: card("week", k, a), month: card("month", k, a) }; };
     var summary = { at: new Date(Date.now() - 50 * 60000).toISOString(), all: both(1),
-                    accounts: { IRA: both(0.6), Roth: both(0.4) } };
+                    accounts: { IRA: both(0.6, "IRA"), Roth: both(0.4, "Roth") } };
     return {
       version: 1, sample: true, summary: summary, optionPrices: optionPrices, writtenAt: new Date(Date.now() - 50 * 60000).toISOString(),
       accounts: ["IRA", "Roth"], reminderDays: 7, finnhubKey: "", appliedOps: [],
