@@ -1,8 +1,12 @@
 {
- "version": "1.12",
- "date": "2026-10-23",
- "notes": "What's new in 1.12:\n• Close or roll just some of a trade's contracts: the Close window has a new \"Contracts to close\" box. For example, roll 1 of 2 puts; the other stays open as its own trade (on the phone too)\n• ✂ Split: the new ✂ button next to Close turns one trade into two, so each part can be rolled, closed or assigned on its own\n• Saving no longer fails with \"Access is denied\" when OneDrive or another sync program is busy with your data file",
+ "version": "1.12.1",
+ "date": "2026-10-25",
+ "notes": "What's new in 1.12.1:\n• On 📋 Options, the box \"Open Positions Net P&L\" is now called \"Premium Collected for Open Positions\" (it always showed the premium on your open trades)\n• Under it, two new lines from today's option prices: \"Cost to close now\" (what buying back everything would cost, with the $0.67 fee) and \"If closed now\" (what you would keep). Any option without a price yet is named, so the numbers add up\n• The phone app's Home box shows the same",
  "history": [
+  {
+   "version": "1.12.1",
+   "notes": "What's new in 1.12.1:\n• On 📋 Options, the box \"Open Positions Net P&L\" is now called \"Premium Collected for Open Positions\" (it always showed the premium on your open trades)\n• Under it, two new lines from today's option prices: \"Cost to close now\" (what buying back everything would cost, with the $0.67 fee) and \"If closed now\" (what you would keep). Any option without a price yet is named, so the numbers add up\n• The phone app's Home box shows the same"
+  },
   {
    "version": "1.12",
    "notes": "What's new in 1.12:\n• Close or roll just some of a trade's contracts: the Close window has a new \"Contracts to close\" box. For example, roll 1 of 2 puts; the other stays open as its own trade (on the phone too)\n• ✂ Split: the new ✂ button next to Close turns one trade into two, so each part can be rolled, closed or assigned on its own\n• Saving no longer fails with \"Access is denied\" when OneDrive or another sync program is busy with your data file"
@@ -58,10 +62,10 @@
  ],
  "windows": {
   "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ-update.zip",
-  "sha256": "a5ec938fc8dd0181feb2fd51fb9e81fa5c1ae7c38e204d255d5e8794bb11dd8e"
+  "sha256": "6d7f504b683e7b09e114bf09be491f13d22328c1aa56545e1d29d0abdf9f995e"
  },
  "mac": {
   "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ-for-Mac.zip",
-  "sha256": "72163e97d6ff921594fe0b636b8219439a59261738c02b23c8d5dbbd04dc93a2"
+  "sha256": "2c0f5b8c723ca8e110c47c6f83f16c5ef1d30de36a27749a3fd5f4a62d877fc8"
  }
 }
