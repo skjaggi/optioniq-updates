@@ -1,8 +1,12 @@
 {
- "version": "1.12.1",
- "date": "2026-10-25",
- "notes": "What's new in 1.12.1:\n• On 📋 Options, the box \"Open Positions Net P&L\" is now called \"Premium Collected for Open Positions\" (it always showed the premium on your open trades)\n• Under it, two new lines from today's option prices: \"Cost to close now\" (what buying back everything would cost, with the $0.67 fee) and \"If closed now\" (what you would keep). Any option without a price yet is named, so the numbers add up\n• The phone app's Home box shows the same",
+ "version": "1.12.2",
+ "date": "2026-10-26",
+ "notes": "What's new in 1.12.2:\n• 📈 Stocks: the Call Premium column now counts every call you sold on a stock since the oldest shares you still hold. Calls sold before a later put assignment were left out before\n• Stocks you bought yourself (not from an assigned put) now show their call premium too, once you hold 100 or more shares",
  "history": [
+  {
+   "version": "1.12.2",
+   "notes": "What's new in 1.12.2:\n• 📈 Stocks: the Call Premium column now counts every call you sold on a stock since the oldest shares you still hold. Calls sold before a later put assignment were left out before\n• Stocks you bought yourself (not from an assigned put) now show their call premium too, once you hold 100 or more shares"
+  },
   {
    "version": "1.12.1",
    "notes": "What's new in 1.12.1:\n• On 📋 Options, the box \"Open Positions Net P&L\" is now called \"Premium Collected for Open Positions\" (it always showed the premium on your open trades)\n• Under it, two new lines from today's option prices: \"Cost to close now\" (what buying back everything would cost, with the $0.67 fee) and \"If closed now\" (what you would keep). Any option without a price yet is named, so the numbers add up\n• The phone app's Home box shows the same"
@@ -62,10 +66,10 @@
  ],
  "windows": {
   "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ-update.zip",
-  "sha256": "6d7f504b683e7b09e114bf09be491f13d22328c1aa56545e1d29d0abdf9f995e"
+  "sha256": "75643bc4bf28cf9701774267bcc61949ff48c50e38378c41a7e899c73c639b53"
  },
  "mac": {
   "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ-for-Mac.zip",
-  "sha256": "2c0f5b8c723ca8e110c47c6f83f16c5ef1d30de36a27749a3fd5f4a62d877fc8"
+  "sha256": "5c17df5202c9354e387ef8b6b6d3f68422efd45bcd66a0ce613c9a2191095a5a"
  }
 }
