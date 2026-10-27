@@ -557,11 +557,14 @@
     rows.forEach(function (r) { if (r.gain !== null) { value += r.value; costSum += r.costSum; priced++; } });
     var h = header("Holdings", "Stocks you own");
     h += priceBar() + accountChips(v);
-    if (priced) {
-      var gt = value - costSum;
-      h += '<div class="card"><div class="row"><span class="muted">Total value</span><b>' + money(value) + "</b></div>" +
+    if (rows.length) {
+      // Positions = stocks per account (lots of one stock count once), like the computer's Holdings box.
+      var lotsN = rows.reduce(function (n, r) { return n + r.lots.length; }, 0), gt = value - costSum;
+      h += '<div class="card"><div class="row"><span class="muted">Positions</span><b>' + rows.length +
+        (lotsN > rows.length ? ' <span class="muted small">(' + lotsN + " lots)</span>" : "") + "</b></div>" +
+        (priced ? '<div class="row"><span class="muted">Total value</span><b>' + money(value) + "</b></div>" +
         '<div class="row"><span class="muted">Total gain / loss</span><span class="' + (gt >= 0 ? "up" : "down") + '">' + (gt >= 0 ? "+" : "") + money(gt) +
-        " (" + (gt >= 0 ? "+" : "") + (costSum ? (gt / costSum * 100).toFixed(1) : "0.0") + "%)</span></div></div>";
+        " (" + (gt >= 0 ? "+" : "") + (costSum ? (gt / costSum * 100).toFixed(1) : "0.0") + "%)</span></div>" : "") + "</div>";
     }
     if (rows.length > 1) h += '<div class="chips sm"><span class="muted small">Sort</span>' + STOCK_SORTS.map(function (o) {
       var on = sort === o[0];
