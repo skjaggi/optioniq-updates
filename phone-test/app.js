@@ -515,47 +515,88 @@
 
   var STOCK_SORTS = [["ticker", "Symbol"], ["price", "Price"], ["value", "Value"], ["shares", "Shares"], ["gain", "Gain %"]];
 
+  // Held more than a year (to today) = Long term, like the computer's lots.
+  function lotTerm(acq) {
+    if (!acq) return "";
+    var a = new Date(acq + "T00:00:00"); if (isNaN(a)) return "";
+    a.setFullYear(a.getFullYear() + 1);
+    return new Date() > a ? "Long" : "Short";
+  }
+
+  // One card per stock per account, like the computer; a stock bought in
+  // several lots opens with a tap to show each lot.
   function holdingsScreen(v) {
-    var rows = v.stocks.filter(inAccount).map(function (s) {
-      var q = prices.q[s.ticker], px = q && q.c || num(s.currentPrice), cost = num(s.costBasis), sh = num(s.shares) || 0;
-      return { s: s, q: q, px: px, cost: cost, sh: sh, value: px ? px * sh : null,
-               gain: px && cost ? (px - cost) * sh : null, pct: px && cost ? (px - cost) / cost * 100 : null };
+    var groups = {}, order = [];
+    v.stocks.filter(inAccount).forEach(function (s) {
+      var k = s.account + "|" + s.ticker, q = prices.q[s.ticker], px = q && q.c || num(s.currentPrice);
+      if (!groups[k]) { groups[k] = { key: k, ticker: s.ticker, account: s.account, q: q, px: px, lots: [], sh: 0, costSum: 0, costKnown: true }; order.push(k); }
+      var g = groups[k], sh = num(s.shares) || 0, cost = num(s.costBasis);
+      if (!g.px) g.px = px;
+      g.lots.push({ s: s, sh: sh, cost: cost });
+      g.sh += sh;
+      if (cost === null) g.costKnown = false; else g.costSum += cost * sh;
+    });
+    var rows = order.map(function (k) {
+      var g = groups[k];
+      g.cost = g.sh ? g.costSum / g.sh : null;
+      g.value = g.px ? g.px * g.sh : null;
+      g.gain = g.px && g.costKnown && g.costSum ? g.value - g.costSum : null;
+      g.pct = g.gain !== null ? g.gain / g.costSum * 100 : null;
+      g.lots.sort(function (a, b) { return String(b.s.dateAcquired || "").localeCompare(String(a.s.dateAcquired || "")); });
+      return g;
     });
     var sort = settings.stockSort || "ticker", dir = settings.stockDir || (sort === "ticker" ? 1 : -1);
     rows.sort(function (a, b) {
-      if (sort === "ticker") return dir * String(a.s.ticker).localeCompare(String(b.s.ticker));
+      if (sort === "ticker") return dir * String(a.ticker).localeCompare(String(b.ticker)) || String(a.account).localeCompare(String(b.account));
       var k = { price: "px", value: "value", shares: "sh", gain: "pct" }[sort], x = a[k], y = b[k];
       if (x === null || x === undefined) return 1;
       if (y === null || y === undefined) return -1;
-      return dir * (x - y) || String(a.s.ticker).localeCompare(String(b.s.ticker));
+      return dir * (x - y) || String(a.ticker).localeCompare(String(b.ticker));
     });
     var value = 0, costSum = 0, priced = 0;
-    rows.forEach(function (r) { if (r.value !== null && r.cost) { value += r.value; costSum += r.cost * r.sh; priced++; } });
+    rows.forEach(function (r) { if (r.gain !== null) { value += r.value; costSum += r.costSum; priced++; } });
     var h = header("Holdings", "Stocks you own");
     h += priceBar() + accountChips(v);
     if (priced) {
-      var g = value - costSum;
+      var gt = value - costSum;
       h += '<div class="card"><div class="row"><span class="muted">Total value</span><b>' + money(value) + "</b></div>" +
-        '<div class="row"><span class="muted">Total gain / loss</span><span class="' + (g >= 0 ? "up" : "down") + '">' + (g >= 0 ? "+" : "") + money(g) +
-        " (" + (g >= 0 ? "+" : "") + (costSum ? (g / costSum * 100).toFixed(1) : "0.0") + "%)</span></div></div>";
+        '<div class="row"><span class="muted">Total gain / loss</span><span class="' + (gt >= 0 ? "up" : "down") + '">' + (gt >= 0 ? "+" : "") + money(gt) +
+        " (" + (gt >= 0 ? "+" : "") + (costSum ? (gt / costSum * 100).toFixed(1) : "0.0") + "%)</span></div></div>";
     }
     if (rows.length > 1) h += '<div class="chips sm"><span class="muted small">Sort</span>' + STOCK_SORTS.map(function (o) {
       var on = sort === o[0];
       return '<button class="chip' + (on ? " on" : "") + '" data-act="stock-sort" data-v="' + o[0] + '">' + o[1] +
         (on ? (dir > 0 ? " ↑" : " ↓") : "") + "</button>";
     }).join("") + "</div>";
+    var gainText = function (gain, pct) {
+      return '<span class="nowrap ' + (gain >= 0 ? "up" : "down") + '">' + (gain >= 0 ? "+" : "") + money(gain) +
+        (pct !== null ? " (" + (pct >= 0 ? "+" : "") + pct.toFixed(1) + "%)" : "") + "</span>";
+    };
+    var openLots = ui.openLots || (ui.openLots = {});
     h += rows.length ? rows.map(function (r) {
-      var s = r.s;
-      return '<div class="card"><div class="row"><b>' + esc(s.ticker) + "</b><span>" + (r.px ? money(r.px) : "") + "</span></div>" +
+      var many = r.lots.length > 1, open = many && openLots[r.key];
+      var one = !many ? r.lots[0].s : null;
+      var inner = '<div class="row"><b>' + esc(r.ticker) + "</b><span>" + (r.px ? money(r.px) : "") + "</span></div>" +
         (dayChange(r.q) ? '<div class="row"><span class="muted">Today</span>' + dayChange(r.q) + "</div>" : "") +
-        '<div class="muted">' + esc(r.sh) + " shares at " + money(r.cost) + (s.status === "Assigned" ? ", assigned" : "") + " · " + esc(s.account) + "</div>" +
-        (r.value !== null ? '<div class="row"><span class="muted">Value ' + money(r.value) + "</span>" +
-          (r.gain !== null ? '<span class="' + (r.gain >= 0 ? "up" : "down") + '">' + (r.gain >= 0 ? "+" : "") + money(r.gain) +
-            " (" + (r.pct >= 0 ? "+" : "") + r.pct.toFixed(1) + "%)</span>" : "") + "</div>" : "") + "</div>";
+        '<div class="muted">' + esc(fmtShares(r.sh)) + " shares at " + (r.cost !== null ? money(r.cost) + (many ? " avg" : "") : "?") +
+          (one && one.status === "Assigned" ? ", assigned" : "") + " · " + esc(r.account) + "</div>" +
+        (r.value !== null ? '<div class="row"><span class="muted">Value ' + money(r.value) + "</span>" + (r.gain !== null ? gainText(r.gain, r.pct) : "") + "</div>" : "") +
+        (many ? '<div class="lots-toggle">' + (open ? "▾ Hide" : "▸ Show") + " " + r.lots.length + " lots</div>" : "");
+      if (open) inner += '<div class="lots">' + r.lots.map(function (l) {
+        var term = lotTerm(l.s.dateAcquired), lg = r.px && l.cost !== null ? (r.px - l.cost) * l.sh : null;
+        return '<div class="lot"><div class="row"><span>' + (l.s.dateAcquired ? shortDate(l.s.dateAcquired) : "Earlier shares") +
+          (term ? ' <span class="tag term">' + term + "</span>" : "") + "</span>" +
+          (lg !== null ? gainText(lg, l.cost ? (r.px - l.cost) / l.cost * 100 : null) : "") + "</div>" +
+          '<div class="muted small">' + esc(fmtShares(l.sh)) + " shares at " + (l.cost !== null ? money(l.cost) : "?") +
+          (l.s.status === "Assigned" ? ", assigned" : "") + "</div></div>";
+      }).join("") + "</div>";
+      return many ? '<button class="card" data-act="lots" data-v="' + esc(r.key) + '">' + inner + "</button>" : '<div class="card">' + inner + "</div>";
     }).join("") : '<p class="muted center">No stocks held.</p>';
     h += '<p class="muted small center">Stock buys and sells are entered on the computer. Shares from an assignment appear here automatically.</p>';
     return h;
   }
+  // 100 or 12.345 (fractional shares from reinvested dividends).
+  function fmtShares(n) { return String(Math.round(n * 1000) / 1000); }
 
   function watchScreen(v) {
     var list = v.watchlist;
@@ -808,6 +849,7 @@
       case "closed": ui.closed = !!val; render(); app.querySelector("main").scrollTop = 0; break;
       case "period": settings.period = val === "month" ? "month" : "week"; saveState(); render(); break;
       case "profit": ui.profit = !ui.profit; render(); break;
+      case "lots": var ol = ui.openLots || (ui.openLots = {}); ol[val] = !ol[val]; render(); break;
       case "stock-sort":   // tap again to flip the order
         if ((settings.stockSort || "ticker") === val) settings.stockDir = -(settings.stockDir || (val === "ticker" ? 1 : -1));
         else { settings.stockSort = val; settings.stockDir = val === "ticker" ? 1 : -1; }
