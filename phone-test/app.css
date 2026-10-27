@@ -101,3 +101,8 @@ a{color:#60a5fa}
 .optnow{font-size:14px;margin:2px 0}.goal{font-size:13px}.card.goalbox{background:#05966922;border-color:#059669}
 .nowrap{white-space:nowrap}
 .pricebar{margin:0 0 12px}
+.lots-toggle{color:var(--blue);font-size:14px;margin-top:6px}
+.lots{margin-top:8px;border-top:1px solid var(--line)}
+.lot{padding:8px 0 6px 10px;border-bottom:1px solid var(--line)}
+.lot:last-child{border-bottom:0}
+.tag.term{background:#33415580;color:var(--muted);font-size:11px;padding:1px 6px}
