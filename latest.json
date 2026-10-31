@@ -1,8 +1,12 @@
 {
- "version": "1.13",
- "date": "2026-10-28",
- "notes": "What's new in 1.13:\n• New 🧭 Portfolio Review (🔬 Stock Research menu): one click looks at all your stocks and open options and gives each a suggestion (Buy more, Hold, Reduce, Sell; Take profit, Let expire, Close, Roll...) with the reason\n• A to-do list, most urgent first, with Done? ticks that are remembered\n• Cash-secured put ideas for the stocks in your Stock Analysis: strike, expiry, premium, and a cash box that adds up what you'd use\n• You can change any suggestion, and set your profit target and limits in ⚙\n• 📊 Export to Excel saves the review in My Data → Portfolio Reviews\n• Suggestions are rules-based ideas, not financial advice",
+ "version": "1.13.1",
+ "date": "2026-10-31",
+ "notes": "What's new in 1.13.1:\n• Fixes changes made on the phone sometimes not reaching the computer. When OneDrive was still bringing a phone change down, OptionIQ set it aside instead of applying it. It now waits and tries again each minute\n• Closing only some of the contracts of a trade on the phone now works on the computer too",
  "history": [
+  {
+   "version": "1.13.1",
+   "notes": "What's new in 1.13.1:\n• Fixes changes made on the phone sometimes not reaching the computer. When OneDrive was still bringing a phone change down, OptionIQ set it aside instead of applying it. It now waits and tries again each minute\n• Closing only some of the contracts of a trade on the phone now works on the computer too"
+  },
   {
    "version": "1.13",
    "notes": "What's new in 1.13:\n• New 🧭 Portfolio Review (🔬 Stock Research menu): one click looks at all your stocks and open options and gives each a suggestion (Buy more, Hold, Reduce, Sell; Take profit, Let expire, Close, Roll...) with the reason\n• A to-do list, most urgent first, with Done? ticks that are remembered\n• Cash-secured put ideas for the stocks in your Stock Analysis: strike, expiry, premium, and a cash box that adds up what you'd use\n• You can change any suggestion, and set your profit target and limits in ⚙\n• 📊 Export to Excel saves the review in My Data → Portfolio Reviews\n• Suggestions are rules-based ideas, not financial advice"
@@ -70,10 +74,10 @@
  ],
  "windows": {
   "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ-update.zip",
-  "sha256": "b938d00f7b1dd83aca14688ea3cfc55388746f9d614739f6344d4dde113f59be"
+  "sha256": "148c0723ee82d29db40c2c8336e8d44fe772c1947bfd0522146217cb5455cc55"
  },
  "mac": {
   "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ-for-Mac.zip",
-  "sha256": "8c27adc6b23c62f483b2669fa17d5ab5b261f9ad07c9a1607bb38da02babc642"
+  "sha256": "b03016f4d91a35625157b6ea6551a54d0931555c3f95100b859811fb4816f8fa"
  }
 }
