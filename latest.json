@@ -1,8 +1,12 @@
 {
- "version": "1.13.1",
- "date": "2026-10-31",
- "notes": "What's new in 1.13.1:\n• Fixes changes made on the phone sometimes not reaching the computer. When OneDrive was still bringing a phone change down, OptionIQ set it aside instead of applying it. It now waits and tries again each minute\n• Closing only some of the contracts of a trade on the phone now works on the computer too",
+ "version": "1.14",
+ "date": "2026-11-06",
+ "notes": "What's new in 1.14:\n• The S&P 500 (SPY) and Nasdaq 100 (QQQ) names at the top right now open that fund's chart on Yahoo Finance\n• 🔬 Stock Analysis has a new switch: ⭐ My watchlist, or ✏ Tickers I type. Type any tickers with commas or semicolons between them (for example AAPL, MSFT; NVDA) and get BUY / HOLD / TRIM for each. Your watchlist results are kept separately\n• New columns on Stock Analysis: Buy near, Take profit and Stop below, with how far each is from today's price. Point at a figure to see where it comes from. They are guides from past prices, not advice",
  "history": [
+  {
+   "version": "1.14",
+   "notes": "What's new in 1.14:\n• The S&P 500 (SPY) and Nasdaq 100 (QQQ) names at the top right now open that fund's chart on Yahoo Finance\n• 🔬 Stock Analysis has a new switch: ⭐ My watchlist, or ✏ Tickers I type. Type any tickers with commas or semicolons between them (for example AAPL, MSFT; NVDA) and get BUY / HOLD / TRIM for each. Your watchlist results are kept separately\n• New columns on Stock Analysis: Buy near, Take profit and Stop below, with how far each is from today's price. Point at a figure to see where it comes from. They are guides from past prices, not advice"
+  },
   {
    "version": "1.13.1",
    "notes": "What's new in 1.13.1:\n• Fixes changes made on the phone sometimes not reaching the computer. When OneDrive was still bringing a phone change down, OptionIQ set it aside instead of applying it. It now waits and tries again each minute\n• Closing only some of the contracts of a trade on the phone now works on the computer too"
@@ -74,10 +78,10 @@
  ],
  "windows": {
   "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ-update.zip",
-  "sha256": "148c0723ee82d29db40c2c8336e8d44fe772c1947bfd0522146217cb5455cc55"
+  "sha256": "bf244c0cecca2a9990d9dddf2a08e8d719853dacb38c0b0fc49d2c920aa8133b"
  },
  "mac": {
   "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ-for-Mac.zip",
-  "sha256": "b03016f4d91a35625157b6ea6551a54d0931555c3f95100b859811fb4816f8fa"
+  "sha256": "606b21bb7b24b807bc5b86eb99b208aa30eabd92b450da2b7f4d534e2d4b81b0"
  }
 }
