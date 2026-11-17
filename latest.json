@@ -1,8 +1,12 @@
 {
- "version": "1.14",
- "date": "2026-11-06",
- "notes": "What's new in 1.14:\n• The S&P 500 (SPY) and Nasdaq 100 (QQQ) names at the top right now open that fund's chart on Yahoo Finance\n• 🔬 Stock Analysis has a new switch: ⭐ My watchlist, or ✏ Tickers I type. Type any tickers with commas or semicolons between them (for example AAPL, MSFT; NVDA) and get BUY / HOLD / TRIM for each. Your watchlist results are kept separately\n• New columns on Stock Analysis: Buy near, Take profit and Stop below, with how far each is from today's price. Point at a figure to see where it comes from. They are guides from past prices, not advice",
+ "version": "1.15",
+ "date": "2026-11-17",
+ "notes": "What's new in 1.15:\n• 🏦 Stocks: a new 📞 Sell Call button on each stock where you hold 100 or more shares without a call on them. It opens ➕ New Trade already filled in as a covered call (account, ticker, price, Call, Sell, Open, and how many contracts your free shares cover). Just add the strike, expiry and premium\n• Stocks whose shares all have an open call show ✔ Covered instead, and it can't be clicked\n• If you type more contracts than your free shares cover, the window warns you in red",
  "history": [
+  {
+   "version": "1.15",
+   "notes": "What's new in 1.15:\n• 🏦 Stocks: a new 📞 Sell Call button on each stock where you hold 100 or more shares without a call on them. It opens ➕ New Trade already filled in as a covered call (account, ticker, price, Call, Sell, Open, and how many contracts your free shares cover). Just add the strike, expiry and premium\n• Stocks whose shares all have an open call show ✔ Covered instead, and it can't be clicked\n• If you type more contracts than your free shares cover, the window warns you in red"
+  },
   {
    "version": "1.14",
    "notes": "What's new in 1.14:\n• The S&P 500 (SPY) and Nasdaq 100 (QQQ) names at the top right now open that fund's chart on Yahoo Finance\n• 🔬 Stock Analysis has a new switch: ⭐ My watchlist, or ✏ Tickers I type. Type any tickers with commas or semicolons between them (for example AAPL, MSFT; NVDA) and get BUY / HOLD / TRIM for each. Your watchlist results are kept separately\n• New columns on Stock Analysis: Buy near, Take profit and Stop below, with how far each is from today's price. Point at a figure to see where it comes from. They are guides from past prices, not advice"
@@ -78,10 +82,10 @@
  ],
  "windows": {
   "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ-update.zip",
-  "sha256": "bf244c0cecca2a9990d9dddf2a08e8d719853dacb38c0b0fc49d2c920aa8133b"
+  "sha256": "3ed1a50c6bf2c7f60dbbe4bf9d95791300c64dfcc26c40e579451370e20bcad9"
  },
  "mac": {
   "url": "https://raw.githubusercontent.com/skjaggi/optioniq-updates/main/OptionIQ-for-Mac.zip",
-  "sha256": "606b21bb7b24b807bc5b86eb99b208aa30eabd92b450da2b7f4d534e2d4b81b0"
+  "sha256": "d11a0e1dfff2e6cdbaccf98514c9a50b7e3fbdbd76fe1b677ed6fbfad58b2938"
  }
 }
